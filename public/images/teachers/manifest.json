@@ -1,0 +1,273 @@
+[
+  {
+    "file": "/images/teachers/ananya_sharma.png",
+    "name": "Ananya Sharma",
+    "source": "teacher_001.png"
+  },
+  {
+    "file": "/images/teachers/arjun_mehta.png",
+    "name": "Arjun Mehta",
+    "source": "teacher_002.png"
+  },
+  {
+    "file": "/images/teachers/kavya_iyer.png",
+    "name": "Kavya Iyer",
+    "source": "teacher_003.png"
+  },
+  {
+    "file": "/images/teachers/rohit_verma.png",
+    "name": "Rohit Verma",
+    "source": "teacher_004.png"
+  },
+  {
+    "file": "/images/teachers/meera_nair.png",
+    "name": "Meera Nair",
+    "source": "teacher_005.png"
+  },
+  {
+    "file": "/images/teachers/aditya_gupta.png",
+    "name": "Aditya Gupta",
+    "source": "teacher_006.png"
+  },
+  {
+    "file": "/images/teachers/riya_kapoor.png",
+    "name": "Riya Kapoor",
+    "source": "teacher_007.png"
+  },
+  {
+    "file": "/images/teachers/kunal_malhotra.png",
+    "name": "Kunal Malhotra",
+    "source": "teacher_008.png"
+  },
+  {
+    "file": "/images/teachers/neha_singh.png",
+    "name": "Neha Singh",
+    "source": "teacher_009.png"
+  },
+  {
+    "file": "/images/teachers/rahul_patel.png",
+    "name": "Rahul Patel",
+    "source": "teacher_010.png"
+  },
+  {
+    "file": "/images/teachers/priya_bansal.png",
+    "name": "Priya Bansal",
+    "source": "teacher_011.png"
+  },
+  {
+    "file": "/images/teachers/varun_shah.png",
+    "name": "Varun Shah",
+    "source": "teacher_012.png"
+  },
+  {
+    "file": "/images/teachers/isha_menon.png",
+    "name": "Isha Menon",
+    "source": "teacher_013.png"
+  },
+  {
+    "file": "/images/teachers/tanvi_jain.png",
+    "name": "Tanvi Jain",
+    "source": "teacher_014.png"
+  },
+  {
+    "file": "/images/teachers/nikhil_chopra.png",
+    "name": "Nikhil Chopra",
+    "source": "teacher_015.png"
+  },
+  {
+    "file": "/images/teachers/aditi_rao.png",
+    "name": "Aditi Rao",
+    "source": "teacher_016.png"
+  },
+  {
+    "file": "/images/teachers/aman_saxena.png",
+    "name": "Aman Saxena",
+    "source": "teacher_017.png"
+  },
+  {
+    "file": "/images/teachers/pranav_singhania.png",
+    "name": "Pranav Singhania",
+    "source": "teacher_018.png"
+  },
+  {
+    "file": "/images/teachers/shruti_desai.png",
+    "name": "Shruti Desai",
+    "source": "teacher_019.png"
+  },
+  {
+    "file": "/images/teachers/sarthak_agarwal.png",
+    "name": "Sarthak Agarwal",
+    "source": "teacher_020.png"
+  },
+  {
+    "file": "/images/teachers/vivek_kulkarni.png",
+    "name": "Vivek Kulkarni",
+    "source": "teacher_021.png"
+  },
+  {
+    "file": "/images/teachers/akash_chatterjee.png",
+    "name": "Akash Chatterjee",
+    "source": "teacher_022.png"
+  },
+  {
+    "file": "/images/teachers/ayesha_khan.png",
+    "name": "Ayesha Khan",
+    "source": "teacher_023.png"
+  },
+  {
+    "file": "/images/teachers/aarohi_sharma.png",
+    "name": "Aarohi Sharma",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_25_15_AM-7c5aadc0-d987-4ab4-9285-e283f143d182.png:tile01",
+    "gender": "Female"
+  },
+  {
+    "file": "/images/teachers/aarohi_verma.png",
+    "name": "Aarohi Verma",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_25_15_AM-7c5aadc0-d987-4ab4-9285-e283f143d182.png:tile02",
+    "gender": "Female"
+  },
+  {
+    "file": "/images/teachers/aarohi_gupta.png",
+    "name": "Aarohi Gupta",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_25_15_AM-7c5aadc0-d987-4ab4-9285-e283f143d182.png:tile03",
+    "gender": "Female"
+  },
+  {
+    "file": "/images/teachers/aakash_sharma.png",
+    "name": "Aakash Sharma",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_25_15_AM-7c5aadc0-d987-4ab4-9285-e283f143d182.png:tile06",
+    "gender": "Male"
+  },
+  {
+    "file": "/images/teachers/aakash_verma.png",
+    "name": "Aakash Verma",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_25_15_AM-7c5aadc0-d987-4ab4-9285-e283f143d182.png:tile07",
+    "gender": "Male"
+  },
+  {
+    "file": "/images/teachers/aakash_gupta.png",
+    "name": "Aakash Gupta",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_25_15_AM-7c5aadc0-d987-4ab4-9285-e283f143d182.png:tile08",
+    "gender": "Male"
+  },
+  {
+    "file": "/images/teachers/aarohi_singh.png",
+    "name": "Aarohi Singh",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_24_54_AM-7e883c31-2b9f-465b-8670-2b42a5e6f418.png:tile04",
+    "gender": "Female"
+  },
+  {
+    "file": "/images/teachers/aakash_singh.png",
+    "name": "Aakash Singh",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_24_54_AM-7e883c31-2b9f-465b-8670-2b42a5e6f418.png:tile08",
+    "gender": "Male"
+  },
+  {
+    "file": "/images/teachers/aakash_kumar.png",
+    "name": "Aaradhya Kumari",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_24_54_AM-7e883c31-2b9f-465b-8670-2b42a5e6f418.png:tile09",
+    "gender": "Female"
+  },
+  {
+    "file": "/images/teachers/aarohi_kumar.png",
+    "name": "Aarohi Kumar",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_25_03_AM-c672b17c-c38f-4611-989d-e872fa6f868f.png:tile01",
+    "gender": "Female"
+  },
+  {
+    "file": "/images/teachers/aarohi_jain.png",
+    "name": "Aarohi Jain",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_25_03_AM-c672b17c-c38f-4611-989d-e872fa6f868f.png:tile04",
+    "gender": "Female"
+  },
+  {
+    "file": "/images/teachers/aakash_jain.png",
+    "name": "Aakash Jain",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_25_03_AM-c672b17c-c38f-4611-989d-e872fa6f868f.png:tile08",
+    "gender": "Male"
+  },
+  {
+    "file": "/images/teachers/aarohi_mehta.png",
+    "name": "Aarohi Mehta",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_25_10_AM-5fce3b4c-5466-4fb3-aa3b-3bd0a5ee20b2.png:tile04",
+    "gender": "Female"
+  },
+  {
+    "file": "/images/teachers/aarohi_agarwal.png",
+    "name": "Aarohi Agarwal",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_25_10_AM-5fce3b4c-5466-4fb3-aa3b-3bd0a5ee20b2.png:tile05",
+    "gender": "Female"
+  },
+  {
+    "file": "/images/teachers/aakash_mehta.png",
+    "name": "Aakash Mehta",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_25_10_AM-5fce3b4c-5466-4fb3-aa3b-3bd0a5ee20b2.png:tile06",
+    "gender": "Male"
+  },
+  {
+    "file": "/images/teachers/aakash_agarwal.png",
+    "name": "Aakash Agarwal",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_25_10_AM-5fce3b4c-5466-4fb3-aa3b-3bd0a5ee20b2.png:tile09",
+    "gender": "Male"
+  },
+  {
+    "file": "/images/teachers/aarohi_bansal.png",
+    "name": "Aarohi Bansal",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_24_43_AM-929f5d42-125f-476f-988d-7c55a1b1f7ec.png:tile02",
+    "gender": "Female"
+  },
+  {
+    "file": "/images/teachers/aarohi_chauhan.png",
+    "name": "Aarohi Chauhan",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_24_43_AM-929f5d42-125f-476f-988d-7c55a1b1f7ec.png:tile04",
+    "gender": "Female"
+  },
+  {
+    "file": "/images/teachers/aarohi_malhotra.png",
+    "name": "Aarohi Malhotra",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_24_43_AM-929f5d42-125f-476f-988d-7c55a1b1f7ec.png:tile05",
+    "gender": "Female"
+  },
+  {
+    "file": "/images/teachers/aakash_bansal.png",
+    "name": "Aakash Bansal",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_24_43_AM-929f5d42-125f-476f-988d-7c55a1b1f7ec.png:tile06",
+    "gender": "Male"
+  },
+  {
+    "file": "/images/teachers/aakash_chauhan.png",
+    "name": "Aakash Chauhan",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_24_43_AM-929f5d42-125f-476f-988d-7c55a1b1f7ec.png:tile09",
+    "gender": "Male"
+  },
+  {
+    "file": "/images/teachers/aakash_malhotra.png",
+    "name": "Aakash Malhotra",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_24_43_AM-929f5d42-125f-476f-988d-7c55a1b1f7ec.png:tile10",
+    "gender": "Male"
+  },
+  {
+    "file": "/images/teachers/aarohi_kapoor.png",
+    "name": "Aarohi Kapoor",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_24_58_AM-c7dab72a-79e0-45e9-b2dc-ffcdd4ca83fc.png:tile04",
+    "gender": "Female"
+  },
+  {
+    "file": "/images/teachers/aakash_kapoor.png",
+    "name": "Aakash Kapoor",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_24_58_AM-c7dab72a-79e0-45e9-b2dc-ffcdd4ca83fc.png:tile06",
+    "gender": "Male"
+  },
+  {
+    "file": "/images/teachers/aakash_saxena.png",
+    "name": "Aakash Saxena",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_24_58_AM-c7dab72a-79e0-45e9-b2dc-ffcdd4ca83fc.png:tile09",
+    "gender": "Male"
+  },
+  {
+    "file": "/images/teachers/aakash_srivastava.png",
+    "name": "Aakash Srivastava",
+    "source": "new:ChatGPT_Image_Feb_6__2026__10_24_58_AM-c7dab72a-79e0-45e9-b2dc-ffcdd4ca83fc.png:tile10",
+    "gender": "Male"
+  }
+]

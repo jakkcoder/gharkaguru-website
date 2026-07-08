@@ -1,0 +1,23 @@
+services:
+  web-dev:
+    profiles: ["dev"]
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - tutornest_node_modules:/app/node_modules
+    ports:
+      - "${FRONTEND_DEV_PORT:-5173}:${FRONTEND_DEV_PORT:-5173}"
+    command: sh -lc "npm install && npm run dev -- --host 0.0.0.0 --port ${FRONTEND_DEV_PORT:-5173}"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      # Default avoids conflict with backend gateway (which uses 8080)
+      - "${FRONTEND_WEB_PORT:-5174}:80"
+
+volumes:
+  tutornest_node_modules:
+

@@ -1,0 +1,48 @@
+Total input: 40
+Kept: 23
+Removed: 17
+Threshold (dhash hamming <=): 8
+
+Kept sources:
+  teacher_001.png <- tutornest_frontend/public/images/split/set_423a654f/teacher_01.png
+  teacher_002.png <- tutornest_frontend/public/images/split/set_423a654f/teacher_02.png
+  teacher_003.png <- tutornest_frontend/public/images/split/set_423a654f/teacher_03.png
+  teacher_004.png <- tutornest_frontend/public/images/split/set_423a654f/teacher_04.png
+  teacher_005.png <- tutornest_frontend/public/images/split/set_423a654f/teacher_05.png
+  teacher_006.png <- tutornest_frontend/public/images/split/set_423a654f/teacher_06.png
+  teacher_007.png <- tutornest_frontend/public/images/split/set_423a654f/teacher_07.png
+  teacher_008.png <- tutornest_frontend/public/images/split/set_423a654f/teacher_08.png
+  teacher_009.png <- tutornest_frontend/public/images/split/set_423a654f/teacher_09.png
+  teacher_010.png <- tutornest_frontend/public/images/split/set_423a654f/teacher_10.png
+  teacher_011.png <- tutornest_frontend/public/images/split/set_aae2da67/teacher_01.png
+  teacher_012.png <- tutornest_frontend/public/images/split/set_aae2da67/teacher_02.png
+  teacher_013.png <- tutornest_frontend/public/images/split/set_aae2da67/teacher_03.png
+  teacher_014.png <- tutornest_frontend/public/images/split/set_aae2da67/teacher_05.png
+  teacher_015.png <- tutornest_frontend/public/images/split/set_aae2da67/teacher_06.png
+  teacher_016.png <- tutornest_frontend/public/images/split/set_aae2da67/teacher_07.png
+  teacher_017.png <- tutornest_frontend/public/images/split/set_aae2da67/teacher_10.png
+  teacher_018.png <- tutornest_frontend/public/images/split/set_b9bd4a48/teacher_02.png
+  teacher_019.png <- tutornest_frontend/public/images/split/set_b9bd4a48/teacher_03.png
+  teacher_020.png <- tutornest_frontend/public/images/split/set_b9bd4a48/teacher_04.png
+  teacher_021.png <- tutornest_frontend/public/images/split/set_b9bd4a48/teacher_06.png
+  teacher_022.png <- tutornest_frontend/public/images/split/set_b9bd4a48/teacher_08.png
+  teacher_023.png <- tutornest_frontend/public/images/split/set_b9bd4a48/teacher_09.png
+
+Removed (duplicate_of):
+  tutornest_frontend/public/images/split/set_aae2da67/teacher_04.png -> tutornest_frontend/public/images/split/set_aae2da67/teacher_02.png
+  tutornest_frontend/public/images/split/set_aae2da67/teacher_08.png -> tutornest_frontend/public/images/split/set_423a654f/teacher_10.png
+  tutornest_frontend/public/images/split/set_aae2da67/teacher_09.png -> tutornest_frontend/public/images/split/set_423a654f/teacher_09.png
+  tutornest_frontend/public/images/split/set_b9bd4a48/teacher_01.png -> tutornest_frontend/public/images/split/set_aae2da67/teacher_01.png
+  tutornest_frontend/public/images/split/set_b9bd4a48/teacher_05.png -> tutornest_frontend/public/images/split/set_aae2da67/teacher_01.png
+  tutornest_frontend/public/images/split/set_b9bd4a48/teacher_07.png -> tutornest_frontend/public/images/split/set_b9bd4a48/teacher_03.png
+  tutornest_frontend/public/images/split/set_b9bd4a48/teacher_10.png -> tutornest_frontend/public/images/split/set_423a654f/teacher_10.png
+  tutornest_frontend/public/images/split/teacher_01.png -> tutornest_frontend/public/images/split/set_aae2da67/teacher_01.png
+  tutornest_frontend/public/images/split/teacher_02.png -> tutornest_frontend/public/images/split/set_aae2da67/teacher_02.png
+  tutornest_frontend/public/images/split/teacher_03.png -> tutornest_frontend/public/images/split/set_aae2da67/teacher_03.png
+  tutornest_frontend/public/images/split/teacher_04.png -> tutornest_frontend/public/images/split/set_aae2da67/teacher_02.png
+  tutornest_frontend/public/images/split/teacher_05.png -> tutornest_frontend/public/images/split/set_aae2da67/teacher_05.png
+  tutornest_frontend/public/images/split/teacher_06.png -> tutornest_frontend/public/images/split/set_aae2da67/teacher_06.png
+  tutornest_frontend/public/images/split/teacher_07.png -> tutornest_frontend/public/images/split/set_aae2da67/teacher_07.png
+  tutornest_frontend/public/images/split/teacher_08.png -> tutornest_frontend/public/images/split/set_423a654f/teacher_10.png
+  tutornest_frontend/public/images/split/teacher_09.png -> tutornest_frontend/public/images/split/set_423a654f/teacher_09.png
+  tutornest_frontend/public/images/split/teacher_10.png -> tutornest_frontend/public/images/split/set_aae2da67/teacher_10.png

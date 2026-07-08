@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Avoid indexing auth/private app areas
+Disallow: /login
+Disallow: /signup
+Disallow: /student/
+Disallow: /teacher/dashboard
+Disallow: /shortlist
+
+# Avoid indexing API routes
+Disallow: /v1/api/
+
+Sitemap: https://gharkaguru.com/sitemap.xml
+
