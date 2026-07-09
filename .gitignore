@@ -6,3 +6,9 @@ dist/
 .DS_Store
 src.zip
 source.zip
+backend/.venv/
+__pycache__/
+*.pyc
+/tmp/
+website.db
+.gcs_website_state.json
