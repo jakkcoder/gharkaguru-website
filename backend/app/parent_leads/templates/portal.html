@@ -105,6 +105,11 @@
                 <input type="hidden" name="tab" value="{{ tab }}" />
                 <button class="btn btn-danger" type="submit">Junk</button>
               </form>
+              {% else %}
+              <form method="post" action="/parent_leads/portal/leads/{{ lead.lead_id }}/restore" style="margin:0;display:inline">
+                <input type="hidden" name="tab" value="{{ tab }}" />
+                <button class="btn" type="submit">← Assigned</button>
+              </form>
               {% endif %}
             </div>
             {% if tab != 'junk' %}

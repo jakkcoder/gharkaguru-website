@@ -621,6 +621,39 @@ def mark_lead_junk(lead_id: str, agent_id: str, *, path: Path | None = None) -> 
     return get_lead(lead_id, path)
 
 
+def restore_lead_from_junk(
+    lead_id: str,
+    agent_id: str,
+    *,
+    path: Path | None = None,
+) -> dict[str, Any] | None:
+    """Clear junk flag and place lead back on Assigned. Preserves fill/details."""
+    lead = _agent_owns_lead(lead_id, agent_id, path)
+    if not lead:
+        return None
+    if not lead.get("is_junk"):
+        return None
+    ts = now_iso()
+    with connect(path) as conn:
+        conn.execute(
+            """
+            UPDATE parent_leads
+            SET is_junk = 0, pipeline_stage = ?, updated_at = ?
+            WHERE lead_id = ? AND assigned_agent_id = ? AND is_junk = 1
+            """,
+            (STAGE_ASSIGNED, ts, lead_id, agent_id),
+        )
+        log_lead_event(
+            lead_id,
+            "restore",
+            agent_id=agent_id,
+            detail="Junk → Assigned",
+            conn=conn,
+        )
+        conn.commit()
+    return get_lead(lead_id, path)
+
+
 def promote_lead_with_teacher(
     lead_id: str,
     agent_id: str,

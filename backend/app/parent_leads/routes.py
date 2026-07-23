@@ -432,6 +432,28 @@ def portal_junk_lead(
     return RedirectResponse(f"/parent_leads/portal?tab={TAB_JUNK}&msg=Moved+to+junk", status_code=303)
 
 
+@router.post("/portal/leads/{lead_id}/restore")
+def portal_restore_lead(
+    lead_id: str,
+    tab: str = Form(TAB_JUNK),
+    agent_id: str = Depends(agent_session),
+):
+    try:
+        updated = db.restore_lead_from_junk(lead_id, agent_id)
+        if not updated:
+            return RedirectResponse(
+                f"/parent_leads/portal?tab={tab}&msg=Could+not+restore+lead",
+                status_code=303,
+            )
+        _persist()
+    except Exception as exc:
+        return RedirectResponse(f"/parent_leads/portal?tab={tab}&error={exc}", status_code=303)
+    return RedirectResponse(
+        f"/parent_leads/portal?tab={STAGE_ASSIGNED}&msg=Restored+to+Assigned",
+        status_code=303,
+    )
+
+
 @router.post("/portal/leads/{lead_id}/promote")
 def portal_promote_lead(
     lead_id: str,
