@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Finalized deals</title>
+  <style>
+    :root { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --muted: #94a3b8; --accent: #f59e0b; --err: #f87171; --ok: #4ade80; --border: #334155; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 1rem 1.25rem 3rem; }
+    header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+    h1 { margin: 0; font-size: 1.35rem; }
+    .banner { padding: .65rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: .9rem; }
+    .banner.err { background: rgba(248,113,113,.15); color: var(--err); }
+    .banner.ok { background: rgba(74,222,128,.12); color: var(--ok); }
+    .grid { display: grid; gap: 1.5rem; }
+    @media (min-width: 960px) { .grid { grid-template-columns: 340px 1fr; align-items: start; } }
+    .panel { background: var(--card); border-radius: 12px; padding: 1.25rem; border: 1px solid var(--border); }
+    .panel h2 { margin: 0 0 1rem; font-size: 1rem; }
+    label { display: block; font-size: .75rem; color: var(--muted); margin: .65rem 0 .25rem; }
+    input, select, textarea { width: 100%; padding: .5rem .6rem; border-radius: 6px; border: 1px solid var(--border); background: #0f172a; color: var(--text); font: inherit; }
+    textarea { min-height: 3rem; resize: vertical; }
+    .btn { display: inline-block; padding: .55rem 1rem; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; text-decoration: none; font-size: .85rem; }
+    .btn-primary { background: var(--accent); color: #0f172a; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-danger { background: #7f1d1d; color: #fecaca; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    th, td { text-align: left; padding: .5rem .4rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; white-space: nowrap; }
+    .actions { display: flex; flex-wrap: wrap; gap: .35rem; }
+    .muted { color: var(--muted); font-size: .8rem; }
+    .section-title { font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; color: var(--accent); margin-top: .5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Finalized deals</h1>
+    <form method="post" action="/finilized_deals/logout" style="margin:0">
+      <button type="submit" class="btn btn-ghost">Sign out</button>
+    </form>
+  </header>
+
+  {% if error %}<div class="banner err">{{ error }}</div>{% endif %}
+  {% if msg %}<div class="banner ok">{{ msg }}</div>{% endif %}
+
+  <div class="grid">
+    <div class="panel">
+      <h2>Add deal</h2>
+      <form method="post" action="/finilized_deals/submit">
+        <div class="section-title">Parent</div>
+        <label>Name</label><input name="parent_name" value="{{ form.parent_name }}" />
+        <label>Phone</label><input name="parent_phone" value="{{ form.parent_phone }}" />
+        <label>Class</label><input name="parent_class" value="{{ form.parent_class }}" />
+        <label>Location</label><input name="parent_location" value="{{ form.parent_location }}" />
+        <label>Mode</label><input name="parent_mode" placeholder="online / home" value="{{ form.parent_mode }}" />
+        <div class="section-title">Teacher</div>
+        <label>Name</label><input name="teacher_name" value="{{ form.teacher_name }}" />
+        <label>Phone</label><input name="teacher_phone" value="{{ form.teacher_phone }}" />
+        <label>Subject</label><input name="teacher_subject" value="{{ form.teacher_subject }}" />
+        <label>Notes</label><textarea name="teacher_notes">{{ form.teacher_notes }}</textarea>
+        <div class="section-title">Deal</div>
+        <label>Finalized amount (₹)</label><input name="finalized_amount" type="number" step="0.01" value="{{ form.finalized_amount }}" />
+        <label>Class start date *</label><input name="class_start_date" type="date" required value="{{ form.class_start_date }}" />
+        <button type="submit" class="btn btn-primary" style="margin-top:1rem;width:100%">Submit</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h2>Register <span class="muted">({{ deals|length }} active)</span></h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Start</th>
+              <th>Aging</th>
+              <th>Parent</th>
+              <th>Teacher</th>
+              <th>Amount</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in deals %}
+            <tr>
+              <td>{{ d.class_start_date[:10] if d.class_start_date else '—' }}</td>
+              <td>{{ d.aging_label }}</td>
+              <td>
+                <strong>{{ d.parent_name or '—' }}</strong><br />
+                <span class="muted">{{ d.parent_phone }}</span><br />
+                <span class="muted">{{ d.parent_class }} · {{ d.parent_location }} · {{ d.parent_mode }}</span>
+              </td>
+              <td>
+                <strong>{{ d.teacher_name or '—' }}</strong><br />
+                <span class="muted">{{ d.teacher_phone }} · {{ d.teacher_subject }}</span>
+              </td>
+              <td>{% if d.finalized_amount is not none %}₹{{ d.finalized_amount }}{% else %}—{% endif %}</td>
+              <td>
+                <div class="actions">
+                  <a class="btn btn-ghost" href="/finilized_deals/edit/{{ d.id }}">Edit</a>
+                  <form method="post" action="/finilized_deals/delete/{{ d.id }}" onsubmit="return confirm('Delete this deal?');" style="margin:0">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="muted">No deals yet — add one on the left.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

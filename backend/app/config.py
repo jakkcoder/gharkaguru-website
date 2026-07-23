@@ -9,6 +9,16 @@ WEBSITE_DB_GCS = os.getenv(
     "WEBSITE_DB_GCS",
     "gs://vertex-ai-learning-487906-gharka-leads/website.db",
 )
+FINALIZED_DEALS_DB_GCS = os.getenv(
+    "FINALIZED_DEALS_DB_GCS",
+    "gs://vertex-ai-learning-487906-gharka-leads/finalized_deals.db",
+)
+FINALIZED_DEALS_PASSWORD = os.getenv("FINALIZED_DEALS_PASSWORD", "khus@123")
+FINALIZED_DEALS_SESSION_SECRET = os.getenv(
+    "FINALIZED_DEALS_SESSION_SECRET",
+    "gharkaguru-finalized-deals-session",
+)
+FINALIZED_DEALS_GCS_STATE_PATH = DATA_DIR / ".gcs_finalized_deals_state.json"
 UPLOADS_GCS_PREFIX = os.getenv(
     "UPLOADS_GCS_PREFIX",
     "gs://vertex-ai-learning-487906-gharka-leads/website-uploads",

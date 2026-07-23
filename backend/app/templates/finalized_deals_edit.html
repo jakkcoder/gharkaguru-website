@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Edit deal</title>
+  <style>
+    :root { --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --muted: #94a3b8; --accent: #f59e0b; --border: #334155; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 1.25rem; max-width: 520px; margin-inline: auto; }
+    h1 { font-size: 1.25rem; margin: 0 0 .25rem; }
+    .muted { color: var(--muted); font-size: .85rem; margin-bottom: 1.25rem; }
+    .panel { background: var(--card); border-radius: 12px; padding: 1.25rem; border: 1px solid var(--border); }
+    label { display: block; font-size: .75rem; color: var(--muted); margin: .65rem 0 .25rem; }
+    input, textarea { width: 100%; padding: .5rem .6rem; border-radius: 6px; border: 1px solid var(--border); background: #0f172a; color: var(--text); font: inherit; }
+    textarea { min-height: 3rem; }
+    .btn { display: inline-block; padding: .55rem 1rem; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; text-decoration: none; font-size: .85rem; margin-right: .5rem; margin-top: 1rem; }
+    .btn-primary { background: var(--accent); color: #0f172a; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .section-title { font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; color: var(--accent); margin-top: .5rem; }
+  </style>
+</head>
+<body>
+  <h1>Edit deal</h1>
+  <p class="muted">Aging now: {{ deal.aging_label }} · submitted {{ deal.submitted_at[:10] if deal.submitted_at else '' }}</p>
+  <div class="panel">
+    <form method="post" action="/finilized_deals/edit/{{ deal_id }}">
+      <div class="section-title">Parent</div>
+      <label>Name</label><input name="parent_name" value="{{ form.parent_name }}" />
+      <label>Phone</label><input name="parent_phone" value="{{ form.parent_phone }}" />
+      <label>Class</label><input name="parent_class" value="{{ form.parent_class }}" />
+      <label>Location</label><input name="parent_location" value="{{ form.parent_location }}" />
+      <label>Mode</label><input name="parent_mode" value="{{ form.parent_mode }}" />
+      <div class="section-title">Teacher</div>
+      <label>Name</label><input name="teacher_name" value="{{ form.teacher_name }}" />
+      <label>Phone</label><input name="teacher_phone" value="{{ form.teacher_phone }}" />
+      <label>Subject</label><input name="teacher_subject" value="{{ form.teacher_subject }}" />
+      <label>Notes</label><textarea name="teacher_notes">{{ form.teacher_notes }}</textarea>
+      <div class="section-title">Deal</div>
+      <label>Finalized amount (₹)</label><input name="finalized_amount" type="number" step="0.01" value="{{ form.finalized_amount }}" />
+      <label>Class start date *</label><input name="class_start_date" type="date" required value="{{ form.class_start_date }}" />
+      <button type="submit" class="btn btn-primary">Save</button>
+      <a class="btn btn-ghost" href="/finilized_deals">Cancel</a>
+    </form>
+  </div>
+</body>
+</html>
