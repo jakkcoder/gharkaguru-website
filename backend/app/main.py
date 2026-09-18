@@ -8,17 +8,12 @@ from typing import Any
 
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
-from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.auth import create_session, get_session, normalize_phone
 from app.config import CORS_ORIGINS, PULL_ON_STARTUP
 from app.finalized_deals_gcs import ensure_local_finalized_deals_db, pull_finalized_deals_db
 from app.finalized_deals_routes import router as finalized_deals_router
-from app.parent_leads import db as parent_leads_db
-from app.parent_leads.gcs_db import ensure_local_db as ensure_local_parent_leads_db, pull_db as pull_parent_leads_db
-from app.parent_leads.routes import router as parent_leads_router
 from app.db import (
     connect,
     dumps,
@@ -55,33 +50,12 @@ async def lifespan(_: FastAPI):
             logger.info("Pulled finalized_deals.db from GCS")
         except Exception as exc:
             logger.warning("Finalized deals GCS pull failed, using local DB: %s", exc)
-    ensure_local_parent_leads_db()
-    parent_leads_db.init_db()
-    if PULL_ON_STARTUP:
-        try:
-            pull_parent_leads_db()
-            logger.info("Pulled parent_leads.db from GCS")
-        except Exception as exc:
-            logger.warning("Parent leads GCS pull failed, using local DB: %s", exc)
     yield
 
 
 app = FastAPI(title="GharKaGuru Website API", lifespan=lifespan)
 
-
-@app.exception_handler(StarletteHTTPException)
-async def parent_leads_unauth_redirect(request: Request, exc: StarletteHTTPException):
-    """Browser-friendly redirects for parent leads portal (matches standalone inbox app)."""
-    if exc.status_code == 401 and request.url.path.startswith("/parent_leads"):
-        detail = str(exc.detail).lower()
-        if "admin" in detail:
-            return RedirectResponse("/parent_leads/admin/login", status_code=303)
-        return RedirectResponse("/parent_leads/login", status_code=303)
-    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
-
-
 app.include_router(finalized_deals_router)
-app.include_router(parent_leads_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS or ["*"],
