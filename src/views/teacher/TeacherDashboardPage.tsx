@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
 import { useAuth } from '../../features/auth/useAuth'
 import { getTeacherApplication } from '../../api/teacher'
+import { getEnquiryEligibility, listMyParentEnquiries, parentPhoneForDisplay } from '../../api/parentEnquiries'
 
 export function TeacherDashboardPage() {
   const auth = useAuth()
@@ -15,6 +16,18 @@ export function TeacherDashboardPage() {
 
   const completion = q.data?.profileCompletionPercent ?? 0
   const status = q.data?.status ?? 'NotStarted'
+  const applications = useQuery({
+    queryKey: ['my-parent-enquiries'],
+    queryFn: listMyParentEnquiries,
+    enabled: Boolean(auth.token) && auth.role === 'teacher',
+  })
+  const eligibility = useQuery({
+    queryKey: ['enquiry-eligibility'],
+    queryFn: getEnquiryEligibility,
+    enabled: Boolean(auth.token) && auth.role === 'teacher',
+  })
+  const alreadyRegistered = Boolean(eligibility.data?.registered)
+  const statusLabel = alreadyRegistered && status === 'NotStarted' ? 'Registered' : status
 
   return (
     <>
@@ -45,7 +58,7 @@ export function TeacherDashboardPage() {
           <div className="mt-4 flex gap-2">
             <Link to="/teacher/register" className="inline-flex">
               <Button size="sm" disabled={!auth.token}>
-                {status === 'NotStarted' ? 'Start application' : 'Edit profile'}
+                {alreadyRegistered && status === 'NotStarted' ? 'Add website profile' : status === 'NotStarted' ? 'Start application' : 'Edit profile'}
               </Button>
             </Link>
             <Link to="/teacher/register?assist=1" className="inline-flex">
@@ -59,10 +72,34 @@ export function TeacherDashboardPage() {
         <div className="rounded-2xl border border-tn-border bg-white p-6">
           <h2 className="text-lg font-semibold">Application status</h2>
           <div className="mt-3 inline-flex rounded-full bg-tn-bg px-3 py-1 text-sm">
-            {q.isLoading ? 'Loading…' : status}
+            {q.isLoading ? 'Loading…' : statusLabel}
           </div>
           {q.data?.referenceId ? <div className="mt-2 text-sm text-tn-muted">Ref: {q.data.referenceId}</div> : null}
         </div>
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-tn-border bg-white p-6">
+        <h2 className="text-lg font-semibold">Parent enquiries</h2>
+        {!applications.data?.items.length ? (
+          <p className="mt-2 text-sm text-tn-muted">You have not applied for a parent enquiry yet.</p>
+        ) : (
+          <ul className="mt-3 space-y-3 text-sm">
+            {applications.data.items.map((item) => {
+              const phone = parentPhoneForDisplay(item.paymentStatus, item.parentPhone)
+              return (
+                <li key={item.enquiryId} className="rounded-xl border border-tn-border p-3">
+                  <Link to={`/parent-enquiries/${item.enquiryId}`} className="font-medium">
+                    {item.studentName || 'Student'} · {item.subject || item.classLevel}
+                  </Link>
+                  <p className="text-tn-muted">
+                    {item.enquiryStatus} · Rs {item.amountRupees} · {item.paymentStatus}
+                  </p>
+                  {phone ? <p>Parent number: {phone}</p> : <p className="text-tn-muted">Parent number hidden until payment is confirmed.</p>}
+                </li>
+              )
+            })}
+          </ul>
+        )}
       </section>
 
       <section className="mt-6 rounded-2xl border border-tn-border bg-white p-6 text-sm text-tn-muted">

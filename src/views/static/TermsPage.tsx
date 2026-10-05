@@ -31,6 +31,16 @@ export function TermsPage() {
           </p>
         </section>
         <section className="rounded-2xl border border-tn-border bg-white p-6">
+          <h2 className="text-lg font-semibold">Parent number access</h2>
+          <p className="mt-2 text-tn-muted">
+            A tutor who applies for a running parent enquiry must acknowledge that they are a tutor.
+            The first parent number unlocked costs Rs 100. Each later parent number costs Rs 500.
+            No refund is provided if the demo fails. After the tutor receives the first tuition payment,
+            25% of that first payment is payable to GharKaGuru. The parent number is shown only after
+            GharKaGuru confirms the access fee.
+          </p>
+        </section>
+        <section className="rounded-2xl border border-tn-border bg-white p-6">
           <h2 className="text-lg font-semibold">Bookings and payments</h2>
           <p className="mt-2 text-tn-muted">
             Pricing, session duration, and payment methods are shared during the booking process.

@@ -105,6 +105,7 @@ export const handlers = [
       distanceKm: t.distanceKm,
       responseTimeMins: t.responseTimeMins,
       boards: t.boards,
+      classes: t.classes,
       mode: t.mode,
     }))
 
@@ -192,6 +193,29 @@ export const handlers = [
   http.get('/api/teacher/application', async () => {
     await delay(300)
     return HttpResponse.json({ referenceId: null, status: 'NotStarted', profileCompletionPercent: 0 })
+  }),
+
+  http.get('/api/parent-enquiries/policy', async () => {
+    return HttpResponse.json({
+      version: '2026-10-01',
+      text: 'Parent number access terms',
+      hash: 'test',
+      firstFeeRupees: 100,
+      nextFeeRupees: 500,
+      commissionPercent: 25,
+    })
+  }),
+
+  http.get('/api/parent-enquiries', async () => {
+    return HttpResponse.json({ items: [] })
+  }),
+
+  http.get('/api/teacher/enquiry-eligibility', async () => {
+    return HttpResponse.json({ registered: false, source: 'none', nextFeeRupees: 100 })
+  }),
+
+  http.get('/api/teacher/parent-enquiries', async () => {
+    return HttpResponse.json({ items: [] })
   }),
 ]
 

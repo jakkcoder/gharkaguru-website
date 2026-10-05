@@ -4,7 +4,8 @@ import type { AuthRole } from './authStore'
 export type AuthCtx = {
   token: string | null
   role: AuthRole | null
-  login: (token: string, role: AuthRole) => void
+  phone: string | null
+  login: (token: string, role: AuthRole, phone?: string) => void
   logout: () => void
 }
 

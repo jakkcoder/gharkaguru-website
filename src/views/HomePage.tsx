@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { getTutors } from '../api/tutors'
-import { subjects } from '../mocks/data/tutors'
+import { subjects } from '../domain/catalog'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { TutorCard } from '../components/tutors/TutorCard'
@@ -91,7 +91,7 @@ export function HomePage() {
         <p className="mt-3 max-w-2xl text-tn-muted">
           Verified tutors for CBSE, ICSE, IB, Languages, and more. Book a demo class in minutes.
         </p>
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Button type="button" size="lg" onClick={() => setLeadEnquiryOpen(true)}>
             Find Tutors
           </Button>
@@ -105,6 +105,15 @@ export function HomePage() {
               Become a Tutor
             </Button>
           </Link>
+          <a
+            href="https://wa.me/919983083002"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-11 items-center justify-center rounded-md bg-[#25D366] px-5 text-base font-medium text-white shadow-soft hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2"
+            aria-label="Chat with us on WhatsApp"
+          >
+            Chat on WhatsApp
+          </a>
         </div>
         </div>
       </section>

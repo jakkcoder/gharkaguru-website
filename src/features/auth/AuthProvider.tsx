@@ -8,20 +8,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const initial = getAuth()
   const [token, setToken] = useState<string | null>(initial.token)
   const [role, setRole] = useState<AuthRole | null>(initial.role)
+  const [phone, setPhone] = useState<string | null>(initial.phone)
 
-  const login = useCallback((t: string, r: AuthRole) => {
-    setAuth(t, r)
+  const login = useCallback((t: string, r: AuthRole, nextPhone?: string) => {
+    setAuth(t, r, nextPhone)
     setToken(t)
     setRole(r)
+    if (nextPhone) setPhone(nextPhone)
   }, [])
 
   const logout = useCallback(() => {
     clearAuth()
     setToken(null)
     setRole(null)
+    setPhone(null)
   }, [])
 
-  const value = useMemo<AuthCtx>(() => ({ token, role, login, logout }), [token, role, login, logout])
+  const value = useMemo<AuthCtx>(() => ({ token, role, phone, login, logout }), [token, role, phone, login, logout])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

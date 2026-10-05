@@ -60,6 +60,75 @@ CREATE TABLE IF NOT EXISTS enquiries (
   status TEXT NOT NULL,
   created_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS parent_enquiries (
+  meta_lead_id TEXT PRIMARY KEY,
+  status TEXT NOT NULL,
+  parent_phone TEXT NOT NULL,
+  parent_name TEXT NOT NULL DEFAULT '',
+  student_name TEXT NOT NULL DEFAULT '',
+  class_level TEXT NOT NULL DEFAULT '',
+  subject TEXT NOT NULL DEFAULT '',
+  board TEXT NOT NULL DEFAULT '',
+  medium TEXT NOT NULL DEFAULT '',
+  tutor_mode TEXT NOT NULL DEFAULT '',
+  teacher_preference TEXT NOT NULL DEFAULT '',
+  address TEXT NOT NULL DEFAULT '',
+  pin TEXT NOT NULL DEFAULT '',
+  budget TEXT NOT NULL DEFAULT '',
+  notes TEXT NOT NULL DEFAULT '',
+  schedule TEXT NOT NULL DEFAULT '',
+  converted_teacher_phone TEXT NOT NULL DEFAULT '',
+  source_revision TEXT NOT NULL DEFAULT '',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS teacher_registry (
+  phone TEXT PRIMARY KEY,
+  full_name TEXT NOT NULL DEFAULT '',
+  source TEXT NOT NULL,
+  status TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS teacher_enquiry_interests (
+  id TEXT PRIMARY KEY,
+  meta_lead_id TEXT NOT NULL,
+  teacher_phone TEXT NOT NULL,
+  policy_version TEXT NOT NULL,
+  policy_hash TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  UNIQUE (meta_lead_id, teacher_phone)
+);
+
+CREATE TABLE IF NOT EXISTS policy_acceptances (
+  id TEXT PRIMARY KEY,
+  teacher_phone TEXT NOT NULL,
+  meta_lead_id TEXT NOT NULL,
+  policy_version TEXT NOT NULL,
+  policy_hash TEXT NOT NULL,
+  accepted_text TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS access_payments (
+  id TEXT PRIMARY KEY,
+  interest_id TEXT NOT NULL UNIQUE,
+  meta_lead_id TEXT NOT NULL,
+  teacher_phone TEXT NOT NULL,
+  amount_rupees INTEGER NOT NULL,
+  amount_paise INTEGER NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'INR',
+  status TEXT NOT NULL,
+  provider TEXT,
+  provider_order_id TEXT,
+  provider_reference TEXT,
+  webhook_payload TEXT,
+  paid_at TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 """
 
 
@@ -121,13 +190,14 @@ def new_enquiry_id() -> str:
 def estimate_completion(data: dict[str, Any]) -> int:
     keys = [
         "fullName",
-        "email",
+        "full_name",
         "location",
-        "subjectsTaught",
-        "yearsTeaching",
-        "bio",
-        "teachingMode",
-        "availability",
+        "pin",
+        "subject",
+        "class_can_teach",
+        "education",
+        "medium",
+        "teaching_mode",
     ]
     filled = 0
     for key in keys:

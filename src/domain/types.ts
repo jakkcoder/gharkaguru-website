@@ -71,6 +71,7 @@ export type TutorSummary = Pick<
   | 'responseTimeMins'
   | 'mode'
   | 'boards'
+  | 'classes'
 > & {
   subjects: string[]
 }

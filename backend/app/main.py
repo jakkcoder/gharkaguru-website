@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import json
 import logging
-import uuid
+import os
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
+from fastapi import Depends, FastAPI, Form, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -26,7 +25,10 @@ from app.db import (
     now_iso,
     row_to_dict,
 )
-from app.gcs_io import GcsBusyError, ensure_local_db, pull_db_from_gcs, push_db_to_gcs, upload_bytes
+from app.gcs_io import GcsBusyError, ensure_local_db, pull_db_from_gcs, push_db_to_gcs
+from app.parent_enquiries import note_website_teacher, router as parent_enquiry_router
+from app.public_teachers import get_teacher, search_teachers
+from app.website_tutors import append_website_tutor
 
 logger = logging.getLogger("website-api")
 
@@ -40,7 +42,7 @@ async def lifespan(_: FastAPI):
             logger.info("Pulled website.db from GCS")
         except Exception as exc:
             logger.warning("GCS pull failed, using local DB: %s", exc)
-            init_db()
+        init_db()
     else:
         init_db()
     ensure_local_finalized_deals_db()
@@ -56,6 +58,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(title="GharKaGuru Website API", lifespan=lifespan)
 
 app.include_router(finalized_deals_router)
+app.include_router(parent_enquiry_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS or ["*"],
@@ -66,6 +69,8 @@ app.add_middleware(
 
 
 def sync_to_gcs() -> None:
+    if os.getenv("SKIP_GCS_SYNC", "").lower() in {"1", "true", "yes"}:
+        return
     try:
         push_db_to_gcs()
     except GcsBusyError as exc:
@@ -185,46 +190,19 @@ def teacher_application(session: dict[str, Any] = Depends(get_session)) -> dict[
     }
 
 
-async def _read_upload(file: UploadFile | None) -> tuple[bytes, str, str] | None:
-    if file is None:
-        return None
-    data = await file.read()
-    if not data:
-        return None
-    content_type = file.content_type or "application/octet-stream"
-    name = file.filename or "upload.bin"
-    return data, content_type, name
-
-
 @app.post("/api/teacher/register")
 @app.post("/v1/api/teacher/register")
-async def teacher_register(
+def teacher_register(
     session: dict[str, Any] = Depends(get_session),
     idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
     fullName: str = Form(...),
-    email: str = Form(""),
-    gender: str = Form(""),
-    dob: str = Form(""),
-    location: str = Form(""),
-    feeMin: str = Form("0"),
-    feeMax: str = Form("0"),
-    tenthPercent: str = Form("0"),
-    twelfthPercent: str = Form("0"),
-    degrees: str = Form("[]"),
-    certifications: str = Form("[]"),
-    yearsTeaching: str = Form("0"),
-    subjectsTaught: str = Form("[]"),
-    boards: str = Form("[]"),
-    classes: str = Form("[]"),
-    studentsTaught: str = Form("0"),
-    bio: str = Form(""),
-    teachingMode: str = Form(""),
-    idDocType: str = Form(""),
-    consent: str = Form("false"),
-    availability: str = Form("[]"),
-    photo: UploadFile | None = File(None),
-    idDocs: list[UploadFile] | None = File(None),
-    certFiles: list[UploadFile] | None = File(None),
+    location: str = Form(...),
+    pin: str = Form(...),
+    subject: str = Form(...),
+    classCanTeach: str = Form(...),
+    education: str = Form(...),
+    medium: str = Form(...),
+    teachingMode: str = Form(...),
 ) -> dict[str, Any]:
     phone = session["phone"]
     key = (idempotency_key or "").strip() or None
@@ -238,76 +216,30 @@ async def teacher_register(
             if existing:
                 return {"referenceId": existing["reference_id"]}
 
+    answers = {
+        "full_name": fullName.strip(),
+        "location": location.strip(),
+        "pin": pin.strip(),
+        "subject": subject.strip(),
+        "class_can_teach": classCanTeach.strip(),
+        "education": education.strip(),
+        "medium": medium.strip(),
+        "teaching_mode": teachingMode.strip(),
+    }
+    missing = [name for name, value in answers.items() if not value]
+    if missing or len(answers["pin"]) != 6 or not answers["pin"].isdigit():
+        raise HTTPException(
+            status_code=400,
+            detail={"error": {"code": "INVALID", "message": "Fill every tutor field. PIN must be 6 digits."}},
+        )
+    lead = append_website_tutor(phone, answers)
     profile: dict[str, Any] = {
-        "fullName": fullName,
-        "email": email,
-        "gender": gender,
-        "dob": dob,
-        "location": location,
-        "feeMin": feeMin,
-        "feeMax": feeMax,
-        "tenthPercent": tenthPercent,
-        "twelfthPercent": twelfthPercent,
-        "degrees": _parse_json_field(degrees),
-        "certifications": _parse_json_field(certifications),
-        "yearsTeaching": yearsTeaching,
-        "subjectsTaught": _parse_json_field(subjectsTaught),
-        "boards": _parse_json_field(boards),
-        "classes": _parse_json_field(classes),
-        "studentsTaught": studentsTaught,
-        "bio": bio,
-        "teachingMode": teachingMode,
-        "idDocType": idDocType,
-        "consent": consent.lower() in {"1", "true", "yes"},
-        "availability": _parse_json_field(availability),
+        **answers,
+        "fullName": answers["full_name"],
         "phone": phone,
         "role": "teacher",
+        "websiteLeadId": lead["id"],
     }
-
-    uploads: dict[str, Any] = {}
-    photo_data = await _read_upload(photo)
-    if photo_data:
-        data, content_type, name = photo_data
-        uploads["photo"] = upload_bytes(
-            data,
-            object_name=f"teachers/{phone}/photo-{uuid.uuid4().hex}-{name}",
-            content_type=content_type,
-        )
-
-    id_uris = []
-    for item in idDocs or []:
-        parsed = await _read_upload(item)
-        if not parsed:
-            continue
-        data, content_type, name = parsed
-        id_uris.append(
-            upload_bytes(
-                data,
-                object_name=f"teachers/{phone}/id-{uuid.uuid4().hex}-{name}",
-                content_type=content_type,
-            )
-        )
-    if id_uris:
-        uploads["idDocs"] = id_uris
-
-    cert_uris = []
-    for item in certFiles or []:
-        parsed = await _read_upload(item)
-        if not parsed:
-            continue
-        data, content_type, name = parsed
-        cert_uris.append(
-            upload_bytes(
-                data,
-                object_name=f"teachers/{phone}/cert-{uuid.uuid4().hex}-{name}",
-                content_type=content_type,
-            )
-        )
-    if cert_uris:
-        uploads["certFiles"] = cert_uris
-
-    if uploads:
-        profile["uploads"] = uploads
 
     completion = 100
     ts = now_iso()
@@ -339,6 +271,7 @@ async def teacher_register(
                 """,
                 (reference_id, phone, "Submitted", completion, dumps(profile), key, ts, ts),
             )
+        note_website_teacher(conn, phone, fullName)
         conn.commit()
 
     sync_to_gcs()
@@ -446,6 +379,37 @@ def list_enquiries(session: dict[str, Any] = Depends(get_session)) -> dict[str, 
     return {"items": items}
 
 
+@app.get("/api/tutors")
+@app.get("/v1/api/tutors")
+def list_public_tutors(
+    location: str = "",
+    subject: str = "",
+    subjects: str = "",
+    mode: str = "",
+    ids: str = "",
+    page: int = 1,
+    pageSize: int = 20,
+) -> dict[str, Any]:
+    return search_teachers(
+        location=location,
+        subject=subject,
+        subjects=[item.strip() for item in subjects.split(",") if item.strip()],
+        mode=mode,
+        ids=[item.strip() for item in ids.split(",") if item.strip()],
+        page=page,
+        page_size=pageSize,
+    )
+
+
+@app.get("/api/tutor/{tutor_id}")
+@app.get("/v1/api/tutor/{tutor_id}")
+def public_tutor(tutor_id: str) -> dict[str, Any]:
+    teacher = get_teacher(tutor_id)
+    if not teacher:
+        raise HTTPException(status_code=404, detail={"error": {"code": "NOT_FOUND", "message": "Tutor not found."}})
+    return teacher
+
+
 @app.get("/api/admin/stats")
 @app.get("/v1/api/admin/stats")
 def admin_stats() -> dict[str, Any]:
@@ -464,10 +428,3 @@ def admin_stats() -> dict[str, Any]:
         "teacherDrafts": drafts,
         "inquiries": inquiries,
     }
-
-
-def _parse_json_field(raw: str) -> Any:
-    try:
-        return json.loads(raw or "null")
-    except json.JSONDecodeError:
-        return raw

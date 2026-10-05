@@ -27,10 +27,17 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link to="/">Home</Link>
             <Link to="/search">For Students</Link>
             <Link to="/teacher/register">For Teachers</Link>
+            <Link to="/parent-enquiries">Parent enquiries</Link>
             <Link to="/about">About</Link>
             <Link to="/contact">Contact</Link>
           </nav>
           <div className="flex items-center gap-2 text-sm">
+            <Link
+              to="/parent-enquiries"
+              className="rounded-md px-3 py-2 text-tn-text hover:bg-tn-bg"
+            >
+              Enquiries
+            </Link>
             <Link
               to="/shortlist"
               className="rounded-md px-3 py-2 text-tn-text hover:bg-tn-bg"

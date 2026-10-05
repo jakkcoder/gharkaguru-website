@@ -24,6 +24,7 @@ UPLOADS_GCS_PREFIX = os.getenv(
     "gs://vertex-ai-learning-487906-gharka-leads/website-uploads",
 )
 PULL_ON_STARTUP = os.getenv("PULL_ON_STARTUP", "true").lower() in {"1", "true", "yes"}
+WEBSITE_SYNC_SECRET = os.getenv("WEBSITE_SYNC_SECRET", "").strip()
 GCS_LOCK_MAX_AGE_SECONDS = int(os.getenv("GCS_LOCK_MAX_AGE_SECONDS", "300"))
 CORS_ORIGINS = [
     origin.strip()

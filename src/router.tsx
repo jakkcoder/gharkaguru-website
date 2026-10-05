@@ -16,6 +16,8 @@ import { FaqPage } from './views/static/FaqPage'
 import { PrivacyPage } from './views/static/PrivacyPage'
 import { TermsPage } from './views/static/TermsPage'
 import { GenericErrorPage } from './views/static/GenericErrorPage'
+import { ParentEnquiriesPage } from './views/parent/ParentEnquiriesPage'
+import { ParentEnquiryPage } from './views/parent/ParentEnquiryPage'
 
 export const router = createBrowserRouter(
   [
@@ -32,6 +34,8 @@ export const router = createBrowserRouter(
         { path: 'student/dashboard', element: <StudentDashboardPage /> },
         { path: 'teacher/dashboard', element: <TeacherDashboardPage /> },
         { path: 'teacher/register', element: <TeacherRegisterPage /> },
+        { path: 'parent-enquiries', element: <ParentEnquiriesPage /> },
+        { path: 'parent-enquiries/:enquiryId', element: <ParentEnquiryPage /> },
         { path: 'about', element: <AboutPage /> },
         { path: 'contact', element: <ContactPage /> },
         { path: 'faq', element: <FaqPage /> },

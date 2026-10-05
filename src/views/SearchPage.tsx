@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getTutors } from '../api/tutors'
-import { subjects, boards as boardOptions } from '../mocks/data/tutors'
+import { subjects } from '../domain/catalog'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 import { Pagination } from '../components/ui/Pagination'
@@ -70,15 +70,7 @@ export function SearchPage() {
         subject: params.subject || undefined,
         page: params.page,
         pageSize: params.pageSize,
-        radiusKm: params.radiusKm,
         subjects: params.subjects.length ? params.subjects : undefined,
-        feeMin: params.feeMin,
-        feeMax: params.feeMax,
-        expMin: params.expMin,
-        expMax: params.expMax,
-        ratingMin: params.ratingMin,
-        gender: params.gender !== 'Any' ? params.gender : undefined,
-        board: params.board !== 'Any' ? params.board : undefined,
         mode:
           params.mode === 'Home'
             ? 'offline'
@@ -154,7 +146,7 @@ export function SearchPage() {
     <>
       <Helmet>
         <title>{params.subject && params.location ? `${title} | GharKaGuru` : 'Find Tutors | GharKaGuru'}</title>
-        <meta name="description" content="Search tutors by subject and location, then filter by fee, experience, mode, and more." />
+        <meta name="description" content="Search real GharKaGuru tutors by subject, location, and teaching mode." />
       </Helmet>
 
       <div className="flex flex-col gap-6 lg:flex-row">
@@ -174,20 +166,6 @@ export function SearchPage() {
                 value={params.location}
                 placeholder="Enter city or area"
                 onChange={(e) => onChange({ location: e.target.value })}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Radius ({params.radiusKm} km)</label>
-              <input
-                className="mt-2 w-full"
-                type="range"
-                min={5}
-                max={50}
-                step={1}
-                value={params.radiusKm}
-                onChange={(e) => onChange({ radiusKm: e.target.value })}
-                aria-label="Radius in km"
               />
             </div>
 
@@ -215,92 +193,7 @@ export function SearchPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-medium">Min fee</label>
-                <Input
-                  className="mt-1"
-                  inputMode="numeric"
-                  value={params.feeMin}
-                  onChange={(e) => onChange({ feeMin: e.target.value.replace(/[^\d]/g, '') })}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Max fee</label>
-                <Input
-                  className="mt-1"
-                  inputMode="numeric"
-                  value={params.feeMax}
-                  onChange={(e) => onChange({ feeMax: e.target.value.replace(/[^\d]/g, '') })}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-medium">Exp min</label>
-                <Input
-                  className="mt-1"
-                  inputMode="numeric"
-                  value={params.expMin}
-                  onChange={(e) => onChange({ expMin: e.target.value.replace(/[^\d]/g, '') })}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Exp max</label>
-                <Input
-                  className="mt-1"
-                  inputMode="numeric"
-                  value={params.expMax}
-                  onChange={(e) => onChange({ expMax: e.target.value.replace(/[^\d]/g, '') })}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-medium">Rating</label>
-                <select
-                  className="mt-1 h-10 w-full rounded-md border border-tn-border bg-white px-3 text-sm"
-                  value={params.ratingMin}
-                  onChange={(e) => onChange({ ratingMin: e.target.value })}
-                >
-                  <option value={0}>Any</option>
-                  <option value={3}>3+</option>
-                  <option value={4}>4+</option>
-                  <option value={4.5}>4.5+</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-sm font-medium">Board</label>
-                <select
-                  className="mt-1 h-10 w-full rounded-md border border-tn-border bg-white px-3 text-sm"
-                  value={params.board}
-                  onChange={(e) => onChange({ board: e.target.value })}
-                >
-                  <option>Any</option>
-                  {boardOptions.map((b) => (
-                    <option key={b}>{b}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-medium">Gender</label>
-                <select
-                  className="mt-1 h-10 w-full rounded-md border border-tn-border bg-white px-3 text-sm"
-                  value={params.gender}
-                  onChange={(e) => onChange({ gender: e.target.value })}
-                >
-                  <option>Any</option>
-                  <option>Male</option>
-                  <option>Female</option>
-                  <option>Other</option>
-                </select>
-              </div>
-              <div>
+            <div>
                 <label className="text-sm font-medium">Mode</label>
                 <select
                   className="mt-1 h-10 w-full rounded-md border border-tn-border bg-white px-3 text-sm"
@@ -312,7 +205,6 @@ export function SearchPage() {
                   <option>Online</option>
                   <option>Both</option>
                 </select>
-              </div>
             </div>
           </div>
         </aside>
@@ -327,19 +219,6 @@ export function SearchPage() {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <select
-                className="h-10 rounded-md border border-tn-border bg-white px-3 text-sm"
-                value={params.sort}
-                onChange={(e) => onChange({ sort: e.target.value })}
-                aria-label="Sort results"
-              >
-                <option value="relevance">Relevance</option>
-                <option value="rating">Rating (high → low)</option>
-                <option value="fee">Fee (low → high)</option>
-                <option value="experience">Experience (high → low)</option>
-                <option value="distance">Distance (near → far)</option>
-              </select>
-
               <div className="inline-flex rounded-md border border-tn-border bg-white p-1">
                 <Button
                   variant={params.view === 'grid' ? 'primary' : 'ghost'}

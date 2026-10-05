@@ -15,8 +15,8 @@ export function AuthPage() {
   const isSignup = location.pathname === '/signup'
   const [role, setRole] = useState<AuthRole>('student')
 
-  const onDone = (token: string, r: AuthRole) => {
-    auth.login(token, r)
+  const onDone = (token: string, r: AuthRole, phone?: string) => {
+    auth.login(token, r, phone)
     toast.success('Logged in')
     navigate(r === 'teacher' ? '/teacher/dashboard' : '/student/dashboard')
   }
@@ -50,8 +50,8 @@ export function AuthPage() {
           <div className="mt-5 grid gap-3">
             <OtpPanel
               role={role}
-              onVerified={(token, r) => {
-                onDone(token, r)
+              onVerified={(token, r, phone) => {
+                onDone(token, r, phone)
               }}
             />
           </div>
