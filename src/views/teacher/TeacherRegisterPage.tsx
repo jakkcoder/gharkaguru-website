@@ -8,15 +8,23 @@ import { Input } from '../../components/ui/Input'
 import { Textarea } from '../../components/ui/Textarea'
 import { Spinner } from '../../components/ui/Spinner'
 import { useToast } from '../../components/ui/toast/useToast'
-import { OtpPanel } from '../../features/auth/OtpPanel'
-import { useAuth } from '../../features/auth/useAuth'
 import { clearTeacherDraft, readTeacherDraft, writeTeacherDraft } from '../../features/teacherRegister/draft'
-import { submitTeacherRegistration, upsertTeacherApplicationDraft } from '../../api/teacher'
+import { submitTeacherRegistration } from '../../api/teacher'
 import { ApiError } from '../../api/http'
 import { trackEvent } from '../../lib/analytics'
 import { useAppForm } from '../../lib/forms'
 
+// Accept "+91 98765 43210" and similar, keeping the 10-digit mobile number.
+function toMobile(raw: string) {
+  const digits = raw.replace(/\D/g, '')
+  return digits.length === 12 && digits.startsWith('91') ? digits.slice(2) : digits
+}
+
 const schema = z.object({
+  phone: z
+    .string()
+    .transform(toMobile)
+    .pipe(z.string().regex(/^[6-9]\d{9}$/, 'Enter a valid 10-digit mobile number')),
   fullName: z.string().min(2, 'Full name is required'),
   location: z.string().min(8, 'Enter area and city'),
   pin: z.string().regex(/^\d{6}$/, 'PIN must be 6 digits'),
@@ -30,6 +38,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>
 
 const emptyValues: FormValues = {
+  phone: '',
   fullName: '',
   location: '',
   pin: '',
@@ -43,11 +52,8 @@ const emptyValues: FormValues = {
 export function TeacherRegisterPage() {
   const toast = useToast()
   const navigate = useNavigate()
-  const auth = useAuth()
-  const [phoneVerified, setPhoneVerified] = useState(false)
-  const [phone, setPhone] = useState<string | undefined>(undefined)
   const [submitting, setSubmitting] = useState(false)
-  const [referenceId, setReferenceId] = useState<string | null>(null)
+  const [submittedPhone, setSubmittedPhone] = useState<string | null>(null)
 
   const form = useAppForm<FormValues>({
     resolver: zodResolver(schema),
@@ -58,18 +64,17 @@ export function TeacherRegisterPage() {
     const draft = readTeacherDraft()
     if (!draft?.values) return
     form.reset({ ...emptyValues, ...(draft.values as Partial<FormValues>) })
-    setPhoneVerified(!!draft.phoneVerified)
-    setPhone(draft.phone)
   }, [form])
 
   const saveDraft = (values: FormValues) => {
-    writeTeacherDraft({ step: 0, phoneVerified, phone, path: 'wizard', values })
+    writeTeacherDraft({ step: 0, phoneVerified: false, path: 'wizard', values })
   }
 
   const onSubmit = form.handleSubmit(async (values) => {
     setSubmitting(true)
     try {
       const fd = new FormData()
+      fd.set('phone', values.phone)
       fd.set('fullName', values.fullName.trim())
       fd.set('location', values.location.trim())
       fd.set('pin', values.pin.trim())
@@ -78,10 +83,10 @@ export function TeacherRegisterPage() {
       fd.set('education', values.education.trim())
       fd.set('medium', values.medium)
       fd.set('teachingMode', values.teachingMode)
-      const res = await submitTeacherRegistration(fd)
+      await submitTeacherRegistration(fd)
       clearTeacherDraft()
-      setReferenceId(res.referenceId)
-      trackEvent('teacher_registration_submitted', { phone })
+      setSubmittedPhone(values.phone)
+      trackEvent('teacher_registration_submitted', { phone: values.phone })
       toast.success('Application submitted')
     } catch (error) {
       const message = error instanceof ApiError ? error.message : 'Could not submit the application'
@@ -99,40 +104,34 @@ export function TeacherRegisterPage() {
       </Helmet>
 
       <h1 className="text-2xl font-semibold">Become a Home Tutor</h1>
-      <p className="mt-2 text-tn-muted">Verify your phone, then tell us where and what you teach.</p>
+      <p className="mt-2 text-tn-muted">Share your mobile number and tell us where and what you teach.</p>
 
-      {!phoneVerified ? (
-        <div className="mt-6 rounded-2xl border border-tn-border bg-white p-6">
-          <div className="text-sm font-medium">Phone verification</div>
-          <div className="mt-4">
-            <OtpPanel
-              role="teacher"
-              onVerified={(token, role, verifiedPhone) => {
-                setPhoneVerified(true)
-                setPhone(verifiedPhone)
-                auth.login(token, role, verifiedPhone)
-                writeTeacherDraft({ step: 0, phoneVerified: true, phone: verifiedPhone, path: 'wizard', values: form.getValues() })
-                trackEvent('teacher_registration_started', { phone: verifiedPhone })
-                toast.success('Phone verified')
-                void upsertTeacherApplicationDraft({
-                  contactPhone: verifiedPhone,
-                  draftPath: 'wizard',
-                  draftStep: 0,
-                }).catch(() => undefined)
-              }}
-            />
-          </div>
-        </div>
-      ) : referenceId ? (
+      {submittedPhone ? (
         <div className="mt-6 rounded-2xl border border-tn-border bg-white p-8">
-          <h2 className="text-xl font-semibold">Application in processing. We’ll reach out soon.</h2>
-          <p className="mt-2 text-tn-muted">Reference ID: {referenceId}</p>
-          <div className="mt-6">
-            <Button onClick={() => navigate('/teacher/dashboard')}>Go to Teacher Dashboard</Button>
+          <h2 className="text-xl font-semibold">Thanks, your details are with us. Our team will call you on {submittedPhone}.</h2>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Button onClick={() => navigate('/parent-enquiries')}>See parent enquiries</Button>
+            <Button variant="secondary" onClick={() => navigate('/')}>
+              Back to home
+            </Button>
           </div>
         </div>
       ) : (
         <form className="mt-6 space-y-4 rounded-2xl border border-tn-border bg-white p-6" onSubmit={onSubmit}>
+          <div>
+            <label className="text-sm font-medium" htmlFor="tutor-phone">Mobile number</label>
+            <Input
+              id="tutor-phone"
+              className="mt-1"
+              type="tel"
+              inputMode="numeric"
+              autoComplete="tel-national"
+              placeholder="10-digit mobile number"
+              {...form.register('phone', { onBlur: () => saveDraft(form.getValues()) })}
+              error={!!form.formState.errors.phone}
+            />
+            {form.formState.errors.phone ? <p className="mt-1 text-sm text-tn-error">{form.formState.errors.phone.message}</p> : null}
+          </div>
           <div>
             <label className="text-sm font-medium" htmlFor="tutor-full-name">Full name</label>
             <Input id="tutor-full-name" className="mt-1" {...form.register('fullName')} error={!!form.formState.errors.fullName} />

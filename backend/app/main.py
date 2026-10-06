@@ -5,7 +5,7 @@ import os
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import Depends, FastAPI, Form, Header, HTTPException
+from fastapi import Depends, FastAPI, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -193,8 +193,7 @@ def teacher_application(session: dict[str, Any] = Depends(get_session)) -> dict[
 @app.post("/api/teacher/register")
 @app.post("/v1/api/teacher/register")
 def teacher_register(
-    session: dict[str, Any] = Depends(get_session),
-    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+    phone: str = Form(...),
     fullName: str = Form(...),
     location: str = Form(...),
     pin: str = Form(...),
@@ -204,18 +203,7 @@ def teacher_register(
     medium: str = Form(...),
     teachingMode: str = Form(...),
 ) -> dict[str, Any]:
-    phone = session["phone"]
-    key = (idempotency_key or "").strip() or None
-
-    with connect() as conn:
-        if key:
-            existing = conn.execute(
-                "SELECT reference_id FROM teacher_applications WHERE idempotency_key = ?",
-                (key,),
-            ).fetchone()
-            if existing:
-                return {"referenceId": existing["reference_id"]}
-
+    phone = normalize_phone(phone)
     answers = {
         "full_name": fullName.strip(),
         "location": location.strip(),
@@ -233,49 +221,13 @@ def teacher_register(
             detail={"error": {"code": "INVALID", "message": "Fill every tutor field. PIN must be 6 digits."}},
         )
     lead = append_website_tutor(phone, answers)
-    profile: dict[str, Any] = {
-        **answers,
-        "fullName": answers["full_name"],
-        "phone": phone,
-        "role": "teacher",
-        "websiteLeadId": lead["id"],
-    }
-
-    completion = 100
-    ts = now_iso()
 
     with connect() as conn:
-        existing = conn.execute(
-            "SELECT reference_id FROM teacher_applications WHERE phone = ?",
-            (phone,),
-        ).fetchone()
-        if existing:
-            reference_id = existing["reference_id"]
-            conn.execute(
-                """
-                UPDATE teacher_applications
-                SET status = ?, profile_completion_percent = ?, data_json = ?,
-                    idempotency_key = COALESCE(?, idempotency_key), updated_at = ?
-                WHERE phone = ?
-                """,
-                ("Submitted", completion, dumps(profile), key, ts, phone),
-            )
-        else:
-            reference_id = new_reference_id()
-            conn.execute(
-                """
-                INSERT INTO teacher_applications
-                  (reference_id, phone, status, profile_completion_percent, data_json,
-                   idempotency_key, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (reference_id, phone, "Submitted", completion, dumps(profile), key, ts, ts),
-            )
-        note_website_teacher(conn, phone, fullName)
+        note_website_teacher(conn, phone, answers["full_name"])
         conn.commit()
 
     sync_to_gcs()
-    return {"referenceId": reference_id}
+    return {"referenceId": lead["id"]}
 
 
 @app.post("/api/inquiry")
