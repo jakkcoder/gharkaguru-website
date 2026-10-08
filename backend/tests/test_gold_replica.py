@@ -123,6 +123,51 @@ class GoldReplicaTests(unittest.TestCase):
             contact_details(row, live=down)
         self.assertEqual(failed.exception.status_code, 503)
 
+    def test_every_detail_change_reaches_the_existing_row(self) -> None:
+        conn = memory_db()
+        replace_open_set(conn, [gold()])
+        changed = gold(
+            classLevel="11", subject="Physics", board="ICSE", medium="hindi", tutorMode="online",
+            teacherPreference="female", locality="", pin="110017", budget="8000",
+            notes="Weekend only", schedule="Sat 10am", updatedAt="2026-10-08T13:50:00+00:00",
+        )
+        replace_open_set(conn, [changed])
+        shown = list_open(conn)
+        self.assertEqual(len(shown), 1)
+        for key in ("classLevel", "subject", "board", "medium", "tutorMode", "teacherPreference",
+                    "locality", "pin", "budget", "notes", "schedule"):
+            self.assertEqual(shown[0][key], changed[key], key)
+
+    def test_page_read_refreshes_a_stale_copy_and_skips_a_fresh_one(self) -> None:
+        import app.gold_replica as replica
+        from app.db import connect, init_db
+
+        init_db()
+        calls: list[str] = []
+        subject = {"value": "Maths"}
+
+        def fetch(path: str) -> dict:
+            calls.append(path)
+            return {"leads": [gold("read-1", subject=subject["value"])]}
+
+        os.environ["GOLD_REPLICA"] = "true"
+        try:
+            replica._last_refresh = 0.0
+            replica.refresh_if_stale(max_age=60, fetch=fetch)
+            subject["value"] = "Physics"
+            replica.refresh_if_stale(max_age=60, fetch=fetch)
+            self.assertEqual(len(calls), 1)
+            replica.refresh_if_stale(max_age=0, fetch=fetch)
+            self.assertEqual(len(calls), 2)
+            with connect(read_only=True) as conn:
+                self.assertEqual(get_open(conn, "read-1")["subject"], "Physics")
+            replica.refresh_if_stale(max_age=0, fetch=lambda path: (_ for _ in ()).throw(OSError("down")))
+            with connect(read_only=True) as conn:
+                self.assertEqual(get_open(conn, "read-1")["subject"], "Physics")
+        finally:
+            os.environ.pop("GOLD_REPLICA", None)
+            replica.refresh_if_stale(max_age=0, fetch=lambda path: {"leads": []})
+
 
 if __name__ == "__main__":
     unittest.main()
