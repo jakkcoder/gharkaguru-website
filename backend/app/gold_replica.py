@@ -16,6 +16,7 @@ import json
 import logging
 import os
 import threading
+import time
 import urllib.error
 import urllib.request
 from typing import Any, Callable
@@ -27,7 +28,10 @@ logger = logging.getLogger("website-api")
 LEADS_API_URL = os.getenv(
     "LEADS_API_URL", "http://parent-lead-pipeline.apps.svc.cluster.local:8092"
 ).strip().rstrip("/")
-REFRESH_SECONDS = max(5, int(os.getenv("GOLD_REPLICA_SECONDS", "30")))
+REFRESH_SECONDS = max(5, int(os.getenv("GOLD_REPLICA_SECONDS", "15")))
+# A page read refreshes first when the copy is older than this, so an edit in the
+# leads tool shows on the next page load.
+READ_MAX_AGE_SECONDS = float(os.getenv("GOLD_REPLICA_READ_MAX_AGE", "3"))
 
 Fetch = Callable[[str], dict[str, Any]]
 
@@ -112,16 +116,37 @@ def replace_open_set(conn: Any, leads: list[dict[str, Any]]) -> dict[str, int]:
     return {"open": len(seen), "closed": len(stale)}
 
 
+_lock = threading.Lock()
+_last_refresh = 0.0
+
+
 def refresh(fetch: Fetch | None = None) -> dict[str, int]:
     """Pull the gold set once. On any fetch error the replica is left as it was."""
-    body = (fetch or fetch_from_leads_tool)("/api/website/gold-leads")
-    leads = body.get("leads")
-    if not isinstance(leads, list):
-        raise RuntimeError("Leads tool response has no leads list.")
-    with connect() as conn:
-        counts = replace_open_set(conn, leads)
-        conn.commit()
+    global _last_refresh
+    with _lock:
+        body = (fetch or fetch_from_leads_tool)("/api/website/gold-leads")
+        leads = body.get("leads")
+        if not isinstance(leads, list):
+            raise RuntimeError("Leads tool response has no leads list.")
+        with connect() as conn:
+            counts = replace_open_set(conn, leads)
+            conn.commit()
+        _last_refresh = time.monotonic()
     return counts
+
+
+def refresh_if_stale(max_age: float = READ_MAX_AGE_SECONDS, fetch: Fetch | None = None) -> None:
+    """Refresh before a page read unless the copy is fresh. Failures keep the last copy."""
+    if not _enabled() or time.monotonic() - _last_refresh < max_age:
+        return
+    try:
+        refresh(fetch)
+    except Exception as exc:
+        logger.warning("Gold replica refresh before read failed, serving the last copy: %s", exc)
+
+
+def _enabled() -> bool:
+    return os.getenv("GOLD_REPLICA", "true").lower() in {"1", "true", "yes"}
 
 
 def live_contact(meta_lead_id: str, fetch: Fetch | None = None) -> dict[str, str]:
@@ -147,7 +172,7 @@ def _loop(stop: threading.Event) -> None:
 
 
 def start_background_refresh() -> threading.Event | None:
-    if os.getenv("GOLD_REPLICA", "true").lower() not in {"1", "true", "yes"}:
+    if not _enabled():
         return None
     stop = threading.Event()
     threading.Thread(target=_loop, args=(stop,), name="gold-replica", daemon=True).start()

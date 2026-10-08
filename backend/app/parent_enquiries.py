@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 
 from app.auth import get_session
 from app.db import connect, now_iso
+from app.gold_replica import refresh_if_stale
 
 POLICY_VERSION = "2026-10-01"
 FIRST_FEE_RUPEES = 100
@@ -575,6 +576,7 @@ def read_policy() -> dict[str, Any]:
 @router.get("/api/parent-enquiries")
 @router.get("/v1/api/parent-enquiries")
 def read_enquiries() -> dict[str, Any]:
+    refresh_if_stale()
     with connect(read_only=True) as conn:
         return {"items": list_open(conn)}
 
@@ -582,6 +584,7 @@ def read_enquiries() -> dict[str, Any]:
 @router.get("/api/parent-enquiries/{meta_lead_id}")
 @router.get("/v1/api/parent-enquiries/{meta_lead_id}")
 def read_enquiry(meta_lead_id: str) -> dict[str, Any]:
+    refresh_if_stale()
     with connect(read_only=True) as conn:
         item = get_open(conn, meta_lead_id)
     if item is None:
