@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS parent_enquiries (
   tutor_mode TEXT NOT NULL DEFAULT '',
   teacher_preference TEXT NOT NULL DEFAULT '',
   address TEXT NOT NULL DEFAULT '',
+  locality TEXT NOT NULL DEFAULT '',
   pin TEXT NOT NULL DEFAULT '',
   budget TEXT NOT NULL DEFAULT '',
   notes TEXT NOT NULL DEFAULT '',
@@ -157,9 +158,21 @@ def init_db(path: Path | None = None) -> None:
     conn = sqlite3.connect(target)
     try:
         conn.executescript(SCHEMA_SQL)
+        _add_missing_columns(conn)
         conn.commit()
     finally:
         conn.close()
+
+
+# Columns added after a table first shipped. CREATE TABLE IF NOT EXISTS leaves old tables as they were.
+_LATER_COLUMNS = (("parent_enquiries", "locality", "TEXT NOT NULL DEFAULT ''"),)
+
+
+def _add_missing_columns(conn: sqlite3.Connection) -> None:
+    for table, column, kind in _LATER_COLUMNS:
+        existing = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+        if column not in existing:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {kind}")
 
 
 def row_to_dict(row: sqlite3.Row | None) -> dict[str, Any] | None:

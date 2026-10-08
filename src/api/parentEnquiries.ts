@@ -3,15 +3,13 @@ import { apiGet, apiPost } from './http'
 export type ParentEnquiry = {
   id: string
   status: string
-  parentName: string
-  studentName: string
   classLevel: string
   subject: string
   board: string
   medium: string
   tutorMode: string
   teacherPreference: string
-  address: string
+  locality: string
   pin: string
   budget: string
   notes: string

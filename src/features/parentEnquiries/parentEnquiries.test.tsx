@@ -9,15 +9,13 @@ import { PolicyAcknowledgements } from './PolicyAcknowledgements'
 const enquiry: ParentEnquiry = {
   id: 'lead-1',
   status: 'open',
-  parentName: 'S',
-  studentName: 'Kartavya',
   classLevel: '10',
   subject: 'Maths, Science',
   board: 'CBSE',
   medium: 'English',
   tutorMode: 'Home tutor',
   teacherPreference: 'Male',
-  address: 'Raja Puri, Delhi',
+  locality: 'Rajapuri',
   pin: '110059',
   budget: '5000',
   notes: 'Need home tutor',
@@ -33,11 +31,11 @@ describe('parent enquiries', () => {
       </MemoryRouter>,
     )
     expect(screen.getByRole('link', { name: /move forward/i })).toHaveAttribute('href', '/parent-enquiries/lead-1')
-    expect(screen.getByText(/Kartavya/)).toBeInTheDocument()
     expect(screen.getByText(/Class 10/)).toBeInTheDocument()
     expect(screen.queryByText(/Class Class/)).not.toBeInTheDocument()
     expect(screen.getByText(/Maths, Science/)).toBeInTheDocument()
-    expect(screen.getByText(/Raja Puri, Delhi/)).toBeInTheDocument()
+    expect(screen.getByText(/Rajapuri/)).toBeInTheDocument()
+    expect(screen.queryByText(/Student/)).not.toBeInTheDocument()
     expect(screen.queryByText(/parent phone/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/\+91/)).not.toBeInTheDocument()
   })
@@ -54,7 +52,8 @@ describe('parent enquiries', () => {
     expect(params.get('lead_id')).toBe('lead-1')
     expect(params.get('subject')).toBe('Maths, Science')
     expect(params.get('class_level')).toBe('10')
-    expect(params.get('area')).toBe('Raja Puri, Delhi')
+    expect(params.get('area')).toBe('Rajapuri')
+    expect(params.has('student_name')).toBe(false)
     expect(params.get('phone')).toBe('9876543210')
     expect(params.get('teacher_preference')).toBe('Male')
     expect(params.has('schedule')).toBe(false)
