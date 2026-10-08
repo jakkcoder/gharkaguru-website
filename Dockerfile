@@ -33,13 +33,16 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 RUN sed -i 's/\r$//' /app/start.sh \
   && chmod +x /app/start.sh \
-  && mkdir -p /tmp/website-data \
+  && mkdir -p /tmp/website-data /etc/nginx/demo-proxy \
   && nginx -t
 
 ENV DATA_DIR=/tmp/website-data
 ENV PULL_ON_STARTUP=true
 ENV PYTHONPATH=/app/backend
 ENV PORT=8080
+# Internal k3s service of the teacher demo app (jakkcoder/gharkaguru-demo-sub).
+# Set to an empty string to turn the /demo proxy off.
+ENV DEMO_APP_URL=http://gharkaguru-demo-sub.apps.svc.cluster.local:8090
 
 EXPOSE 8080
 CMD ["/app/start.sh"]

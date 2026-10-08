@@ -1,19 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { ParentEnquiry } from '../../api/parentEnquiries'
-
-const LABELS: Record<string, string> = {
-  home: 'Home tutor',
-  online: 'Online tutor',
-  english: 'English',
-  hindi: 'Hindi',
-  male: 'Male',
-  female: 'Female',
-}
-
-function displayValue(value: string) {
-  const text = value.trim()
-  return LABELS[text.toLowerCase()] || text
-}
+import { demoSubmissionHref } from './demoLink'
+import { displayValue } from './display'
 
 function classHeading(value: string) {
   const text = value.trim()
@@ -33,7 +21,15 @@ function line(label: string, value: string) {
   )
 }
 
-export function EnquiryCard({ enquiry, showLink = true }: { enquiry: ParentEnquiry; showLink?: boolean }) {
+export function EnquiryCard({
+  enquiry,
+  showLink = true,
+  teacherPhone,
+}: {
+  enquiry: ParentEnquiry
+  showLink?: boolean
+  teacherPhone?: string | null
+}) {
   return (
     <article className="rounded-2xl border border-tn-border bg-white p-5">
       <h2 className="text-lg font-semibold">
@@ -50,11 +46,20 @@ export function EnquiryCard({ enquiry, showLink = true }: { enquiry: ParentEnqui
         {line('Budget', enquiry.budget)}
         {line('Notes', enquiry.notes)}
       </div>
-      {showLink ? (
-        <Link to={`/parent-enquiries/${enquiry.id}`} className="mt-4 inline-flex text-sm font-medium text-tn-primary">
-          Move forward
-        </Link>
-      ) : null}
+      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+        {showLink ? (
+          <Link to={`/parent-enquiries/${enquiry.id}`} className="inline-flex text-sm font-medium text-tn-primary">
+            Move forward
+          </Link>
+        ) : null}
+        {/* Full page load: /demo is a separate app behind the same domain. */}
+        <a
+          href={demoSubmissionHref(enquiry, teacherPhone)}
+          className="inline-flex items-center rounded-lg bg-tn-primary px-3 py-1.5 text-sm font-semibold text-white hover:bg-tn-primaryDark"
+        >
+          Submit your demo
+        </a>
+      </div>
     </article>
   )
 }

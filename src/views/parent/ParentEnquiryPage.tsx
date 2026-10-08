@@ -96,7 +96,7 @@ export function ParentEnquiryPage() {
       ) : null}
       {enquiry.data ? (
         <div className="mt-4 grid gap-4">
-          <EnquiryCard enquiry={enquiry.data} showLink={false} />
+          <EnquiryCard enquiry={enquiry.data} showLink={false} teacherPhone={teacher ? auth.phone : null} />
           {!teacher ? (
             <OtpPanel
               role="teacher"

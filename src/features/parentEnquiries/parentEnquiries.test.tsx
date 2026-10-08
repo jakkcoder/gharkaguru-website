@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
@@ -40,6 +40,35 @@ describe('parent enquiries', () => {
     expect(screen.getByText(/Raja Puri, Delhi/)).toBeInTheDocument()
     expect(screen.queryByText(/parent phone/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/\+91/)).not.toBeInTheDocument()
+  })
+
+  it('links each enquiry to the demo app without parent details', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <EnquiryCard enquiry={enquiry} teacherPhone="9876543210" />
+      </MemoryRouter>,
+    )
+    const href = within(container).getByRole('link', { name: /submit your demo/i }).getAttribute('href') || ''
+    expect(href.startsWith('/demo/?')).toBe(true)
+    const params = new URLSearchParams(href.split('?')[1])
+    expect(params.get('lead_id')).toBe('lead-1')
+    expect(params.get('subject')).toBe('Maths, Science')
+    expect(params.get('class_level')).toBe('10')
+    expect(params.get('area')).toBe('Raja Puri, Delhi')
+    expect(params.get('phone')).toBe('9876543210')
+    expect(params.get('teacher_preference')).toBe('Male')
+    expect(params.has('schedule')).toBe(false)
+    expect(href).not.toMatch(/parent/i)
+  })
+
+  it('demo link leaves the phone out when no teacher is logged in', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <EnquiryCard enquiry={enquiry} />
+      </MemoryRouter>,
+    )
+    const href = within(container).getByRole('link', { name: /submit your demo/i }).getAttribute('href') || ''
+    expect(new URLSearchParams(href.split('?')[1]).has('phone')).toBe(false)
   })
 
   it('reveals a parent phone only after payment', () => {
