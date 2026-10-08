@@ -1,0 +1,25 @@
+# Tell the private home-server repo to build and deploy this commit.
+# This job runs on GitHub-hosted runners only. It must not use the self-hosted
+# runner: this repository is public, and that runner has cluster access.
+name: deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch home-server deploy
+        env:
+          TOKEN: ${{ secrets.INFRA_DISPATCH_TOKEN }}
+        run: |
+          if [[ -z "${TOKEN}" ]]; then
+            echo "INFRA_DISPATCH_TOKEN is not set on this repository." >&2
+            exit 1
+          fi
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/jakkcoder/gharkaguru-infra/dispatches \
+            -d "{\"event_type\":\"gharkaguru-website\",\"client_payload\":{\"sha\":\"${GITHUB_SHA}\"}}"
