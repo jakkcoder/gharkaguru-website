@@ -25,6 +25,7 @@ from app.db import (
     now_iso,
     row_to_dict,
 )
+from app.gold_replica import start_background_refresh
 from app.gcs_io import GcsBusyError, ensure_local_db, pull_db_from_gcs, push_db_to_gcs
 from app.parent_enquiries import note_website_teacher, router as parent_enquiry_router
 from app.public_teachers import get_teacher, search_teachers
@@ -52,7 +53,10 @@ async def lifespan(_: FastAPI):
             logger.info("Pulled finalized_deals.db from GCS")
         except Exception as exc:
             logger.warning("Finalized deals GCS pull failed, using local DB: %s", exc)
+    stop_replica = start_background_refresh()
     yield
+    if stop_replica is not None:
+        stop_replica.set()
 
 
 app = FastAPI(title="GharKaGuru Website API", lifespan=lifespan)
