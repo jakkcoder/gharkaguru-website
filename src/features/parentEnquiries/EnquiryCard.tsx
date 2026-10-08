@@ -33,7 +33,7 @@ export function EnquiryCard({
   return (
     <article className="rounded-2xl border border-tn-border bg-white p-5">
       <h2 className="text-lg font-semibold">
-        {enquiry.studentName || 'Student'} · {classHeading(enquiry.classLevel)}
+        {classHeading(enquiry.classLevel)}
       </h2>
       <div className="mt-3 space-y-1">
         {line('Subject', enquiry.subject)}
@@ -41,9 +41,10 @@ export function EnquiryCard({
         {line('Medium', enquiry.medium)}
         {line('Mode', enquiry.tutorMode)}
         {line('Teacher preference', enquiry.teacherPreference)}
-        {line('Address', enquiry.address)}
+        {line('Area', enquiry.locality)}
         {line('PIN', enquiry.pin)}
         {line('Budget', enquiry.budget)}
+        {line('Schedule', enquiry.schedule)}
         {line('Notes', enquiry.notes)}
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">

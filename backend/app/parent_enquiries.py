@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import re
 import uuid
 from typing import Any
 
@@ -45,6 +46,7 @@ class EnquirySync(BaseModel):
     tutorMode: str = ""
     teacherPreference: str = ""
     address: str = ""
+    locality: str = ""
     pin: str = ""
     budget: str = ""
     notes: str = ""
@@ -102,24 +104,38 @@ def fee_rupees(conn: Any, teacher_phone: str) -> int:
     return FIRST_FEE_RUPEES if int(paid or 0) == 0 else NEXT_FEE_RUPEES
 
 
+# Eight or more digits with at most one space, dot or dash between them read as a phone number.
+# "5000 - 10000" is a range, not a phone, because of the spaced dash.
+_PHONE_RE = re.compile(r"\+?\d(?:[\s.-]?\d){7,}")
+
+
+def scrub_text(text: str, names: list[str]) -> str:
+    """Remove phone numbers and the parent's or child's names from free text."""
+    cleaned = _PHONE_RE.sub("[hidden]", text or "")
+    for name in names:
+        for part in {name.strip(), *name.split()}:
+            if len(part.strip()) >= 2:
+                cleaned = re.sub(rf"\b{re.escape(part.strip())}\b", "[hidden]", cleaned, flags=re.IGNORECASE)
+    return re.sub(r"\s+", " ", cleaned).strip()
+
+
 def public_enquiry(row: Any) -> dict[str, Any]:
-    """Enquiry fields safe to show before the parent number is paid for."""
+    """Enquiry fields safe to show anyone: no parent phone, names or street address."""
+    names = [str(row["parent_name"] or ""), str(row["student_name"] or "")]
     return {
         "id": row["meta_lead_id"],
         "status": row["status"],
-        "parentName": row["parent_name"],
-        "studentName": row["student_name"],
         "classLevel": row["class_level"],
         "subject": row["subject"],
         "board": row["board"],
         "medium": row["medium"],
         "tutorMode": row["tutor_mode"],
         "teacherPreference": row["teacher_preference"],
-        "address": row["address"],
+        "locality": scrub_text(row["locality"], names),
         "pin": row["pin"],
         "budget": row["budget"],
-        "notes": row["notes"],
-        "schedule": row["schedule"],
+        "notes": scrub_text(row["notes"], names),
+        "schedule": scrub_text(row["schedule"], names),
         "updatedAt": row["updated_at"],
     }
 
@@ -155,6 +171,7 @@ def upsert_enquiry(conn: Any, body: EnquirySync) -> dict[str, Any]:
         body.tutorMode.strip(),
         body.teacherPreference.strip(),
         body.address.strip(),
+        body.locality.strip(),
         body.pin.strip(),
         body.budget.strip(),
         body.notes.strip(),
@@ -170,7 +187,7 @@ def upsert_enquiry(conn: Any, body: EnquirySync) -> dict[str, Any]:
             UPDATE parent_enquiries
             SET status = ?, parent_phone = ?, parent_name = ?, student_name = ?, class_level = ?,
                 subject = ?, board = ?, medium = ?, tutor_mode = ?, teacher_preference = ?,
-                address = ?, pin = ?, budget = ?, notes = ?, schedule = ?,
+                address = ?, locality = ?, pin = ?, budget = ?, notes = ?, schedule = ?,
                 converted_teacher_phone = ?, source_revision = ?, updated_at = ?
             WHERE meta_lead_id = ?
             """,
@@ -181,9 +198,9 @@ def upsert_enquiry(conn: Any, body: EnquirySync) -> dict[str, Any]:
             """
             INSERT INTO parent_enquiries (
                 meta_lead_id, status, parent_phone, parent_name, student_name, class_level,
-                subject, board, medium, tutor_mode, teacher_preference, address, pin, budget,
+                subject, board, medium, tutor_mode, teacher_preference, address, locality, pin, budget,
                 notes, schedule, converted_teacher_phone, source_revision, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (lead_id, *values[:-1], ts),
         )
@@ -492,7 +509,7 @@ def my_applications(conn: Any, teacher_phone: str) -> list[dict[str, Any]]:
         items.append(
             {
                 "enquiryId": row["meta_lead_id"],
-                "studentName": row["student_name"],
+                "studentName": row["student_name"] if paid else "",
                 "subject": row["subject"],
                 "classLevel": row["class_level"],
                 "enquiryStatus": row["enquiry_status"],
