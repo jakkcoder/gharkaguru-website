@@ -6,7 +6,7 @@ import hashlib
 import os
 import re
 import uuid
-from typing import Any
+from typing import Any, Callable
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
@@ -484,10 +484,23 @@ def parent_contact(conn: Any, meta_lead_id: str, teacher_phone: str) -> dict[str
             status_code=402,
             detail={"error": {"code": "PAYMENT_PENDING", "message": "The parent number stays hidden until the access fee is confirmed."}},
         )
-    return {
-        "parentPhone": enquiry["parent_phone"],
-        "parentName": enquiry["parent_name"],
-    }
+    return contact_details(enquiry)
+
+
+def contact_details(enquiry: Any, live: Callable[[str], dict[str, str]] | None = None) -> dict[str, str]:
+    """Parent number for a paid teacher. The replica holds none, so ask the leads tool now."""
+    stored = {"parentPhone": enquiry["parent_phone"] or "", "parentName": enquiry["parent_name"] or ""}
+    if stored["parentPhone"]:
+        return stored
+    from app.gold_replica import live_contact
+
+    try:
+        return (live or live_contact)(enquiry["meta_lead_id"])
+    except Exception as exc:
+        raise HTTPException(
+            status_code=503,
+            detail={"error": {"code": "CONTACT_UNAVAILABLE", "message": "The parent number could not be loaded. Try again shortly."}},
+        ) from exc
 
 
 def my_applications(conn: Any, teacher_phone: str) -> list[dict[str, Any]]:
@@ -506,6 +519,12 @@ def my_applications(conn: Any, teacher_phone: str) -> list[dict[str, Any]]:
     items = []
     for row in rows:
         paid = row["payment_status"] == "paid"
+        contact = {"parentPhone": "", "parentName": ""}
+        if paid:
+            try:
+                contact = contact_details(row)
+            except HTTPException:
+                pass
         items.append(
             {
                 "enquiryId": row["meta_lead_id"],
@@ -517,8 +536,8 @@ def my_applications(conn: Any, teacher_phone: str) -> list[dict[str, Any]]:
                 "paymentStatus": row["payment_status"] or "pending",
                 "amountRupees": row["amount_rupees"] or 0,
                 "createdAt": row["created_at"],
-                "parentPhone": row["parent_phone"] if paid else "",
-                "parentName": row["parent_name"] if paid else "",
+                "parentPhone": contact["parentPhone"],
+                "parentName": contact["parentName"],
             }
         )
     return items
@@ -528,6 +547,14 @@ def _sync_and_commit() -> None:
     from app.main import sync_to_gcs
 
     sync_to_gcs()
+
+
+def _replica_only() -> HTTPException:
+    # Enquiries now come only from the gold replica (app.gold_replica), never from pushes.
+    return HTTPException(
+        status_code=410,
+        detail={"error": {"code": "GONE", "message": "Parent enquiries are replicated from the leads tool."}},
+    )
 
 
 def _teacher_session(session: dict[str, Any]) -> str:
@@ -606,11 +633,7 @@ def internal_upsert(
     x_website_sync_key: str | None = Header(default=None, alias="X-Website-Sync-Key"),
 ) -> dict[str, Any]:
     _require_sync_key(x_website_sync_key)
-    with connect() as conn:
-        saved = upsert_enquiry(conn, body)
-        conn.commit()
-    _sync_and_commit()
-    return saved
+    raise _replica_only()
 
 
 @router.post("/api/internal/parent-enquiries/close")
@@ -620,12 +643,7 @@ def internal_close(
     x_website_sync_key: str | None = Header(default=None, alias="X-Website-Sync-Key"),
 ) -> dict[str, Any]:
     _require_sync_key(x_website_sync_key)
-    closed = body.model_copy(update={"status": "converted"})
-    with connect() as conn:
-        saved = upsert_enquiry(conn, closed)
-        conn.commit()
-    _sync_and_commit()
-    return saved
+    raise _replica_only()
 
 
 @router.post("/api/internal/teachers")
