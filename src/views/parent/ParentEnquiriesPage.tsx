@@ -2,10 +2,13 @@ import { Helmet } from 'react-helmet-async'
 import { useQuery } from '@tanstack/react-query'
 import { listParentEnquiries } from '../../api/parentEnquiries'
 import { EnquiryCard } from '../../features/parentEnquiries/EnquiryCard'
+import { useAuth } from '../../features/auth/useAuth'
 
 export function ParentEnquiriesPage() {
   const query = useQuery({ queryKey: ['parent-enquiries'], queryFn: listParentEnquiries })
   const items = query.data?.items ?? []
+  const auth = useAuth()
+  const teacherPhone = auth.role === 'teacher' ? auth.phone : null
 
   return (
     <>
@@ -22,7 +25,7 @@ export function ParentEnquiriesPage() {
       {!query.isLoading && !items.length ? <p className="mt-6 text-sm text-tn-muted">No open parent enquiries right now.</p> : null}
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         {items.map((enquiry) => (
-          <EnquiryCard key={enquiry.id} enquiry={enquiry} />
+          <EnquiryCard key={enquiry.id} enquiry={enquiry} teacherPhone={teacherPhone} />
         ))}
       </div>
     </>
