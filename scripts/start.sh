@@ -34,7 +34,7 @@ rm -f /etc/nginx/sites-enabled/default
 
 # /demo -> internal demo app (cluster service; not reachable from outside).
 # nginx resolves the name per request, so the site still starts if the demo
-# service is down. Admin pages stay on the LAN host only.
+# service is down. The demo admin (/demo/admin) is behind its own password.
 mkdir -p /etc/nginx/demo-proxy
 rm -f /etc/nginx/demo-proxy/demo.conf
 if [ -n "${DEMO_APP_URL:-}" ]; then
@@ -44,14 +44,6 @@ if [ -n "${DEMO_APP_URL:-}" ]; then
 location = /demo {
   absolute_redirect off;
   return 301 /demo/;
-}
-
-location ^~ /demo/admin {
-  return 404;
-}
-
-location ^~ /demo/api/admin/ {
-  return 404;
 }
 
 location ^~ /demo/ {
