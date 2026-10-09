@@ -25,12 +25,12 @@ const schema = z.object({
     .string()
     .transform(toMobile)
     .pipe(z.string().regex(/^[6-9]\d{9}$/, 'Enter a valid 10-digit mobile number')),
-  fullName: z.string().min(2, 'Full name is required'),
-  location: z.string().min(8, 'Enter area and city'),
-  pin: z.string().regex(/^\d{6}$/, 'PIN must be 6 digits'),
-  subject: z.string().min(1, 'Subjects are required'),
-  classCanTeach: z.string().min(1, 'Classes are required'),
-  education: z.string().min(1, 'Education is required'),
+  fullName: z.string().trim().min(2, 'Full name is required').max(100, 'Keep the name under 100 characters'),
+  location: z.string().trim().min(8, 'Enter area and city').max(300, 'Keep the address under 300 characters'),
+  pin: z.string().trim().regex(/^[1-9]\d{5}$/, 'PIN must be 6 digits'),
+  subject: z.string().trim().min(1, 'Subjects are required').max(200, 'Keep subjects under 200 characters'),
+  classCanTeach: z.string().trim().min(1, 'Classes are required').max(100, 'Keep classes under 100 characters'),
+  education: z.string().trim().min(1, 'Education is required').max(200, 'Keep education under 200 characters'),
   medium: z.enum(['English', 'Hindi', 'Both']),
   teachingMode: z.enum(['Home', 'Online', 'Both']),
 })

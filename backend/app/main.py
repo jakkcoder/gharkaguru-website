@@ -5,7 +5,7 @@ import os
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import Depends, FastAPI, Form, HTTPException
+from fastapi import Depends, FastAPI, Form, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -27,9 +27,16 @@ from app.db import (
 )
 from app.gold_replica import start_background_refresh
 from app.gcs_io import GcsBusyError, ensure_local_db, pull_db_from_gcs, push_db_to_gcs
-from app.parent_enquiries import note_website_teacher, router as parent_enquiry_router
+from app.parent_enquiries import _require_sync_key, note_website_teacher, router as parent_enquiry_router
 from app.public_teachers import get_teacher, search_teachers
-from app.website_tutors import append_website_tutor
+from app.website_tutors import (
+    append_website_tutor,
+    gcs_copy_enabled,
+    list_website_tutors,
+    registration_problem,
+    save_website_tutor,
+    tutor_lead_document,
+)
 
 logger = logging.getLogger("website-api")
 
@@ -218,20 +225,38 @@ def teacher_register(
         "medium": medium.strip(),
         "teaching_mode": teachingMode.strip(),
     }
-    missing = [name for name, value in answers.items() if not value]
-    if missing or len(answers["pin"]) != 6 or not answers["pin"].isdigit():
-        raise HTTPException(
-            status_code=400,
-            detail={"error": {"code": "INVALID", "message": "Fill every tutor field. PIN must be 6 digits."}},
-        )
-    lead = append_website_tutor(phone, answers)
+    problem = registration_problem(phone, answers)
+    if problem:
+        raise HTTPException(status_code=400, detail={"error": {"code": "INVALID", "message": problem}})
 
+    lead = tutor_lead_document(phone, answers)
     with connect() as conn:
+        save_website_tutor(conn, lead)
         note_website_teacher(conn, phone, answers["full_name"])
         conn.commit()
 
-    sync_to_gcs()
+    if gcs_copy_enabled():
+        # The GCS copy is a convenience. The registration is already saved locally.
+        try:
+            append_website_tutor(phone, answers)
+        except Exception:
+            logger.exception("Could not copy tutor %s to GCS", lead["id"])
+        try:
+            sync_to_gcs()
+        except HTTPException:
+            logger.exception("Could not sync website.db after tutor %s", lead["id"])
     return {"referenceId": lead["id"]}
+
+
+@app.get("/api/internal/website-tutors")
+@app.get("/v1/api/internal/website-tutors")
+def internal_website_tutors(
+    x_website_sync_key: str | None = Header(default=None, alias="X-Website-Sync-Key"),
+) -> dict[str, Any]:
+    """Every website tutor registration, for the teacher lead pipeline."""
+    _require_sync_key(x_website_sync_key)
+    with connect(read_only=True) as conn:
+        return {"leads": list_website_tutors(conn)}
 
 
 @app.post("/api/inquiry")
