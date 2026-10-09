@@ -93,6 +93,14 @@ CREATE TABLE IF NOT EXISTS teacher_registry (
   updated_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS website_tutor_leads (
+  id TEXT PRIMARY KEY,
+  phone TEXT NOT NULL UNIQUE,
+  lead_json TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS teacher_enquiry_interests (
   id TEXT PRIMARY KEY,
   meta_lead_id TEXT NOT NULL,

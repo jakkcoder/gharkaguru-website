@@ -13,16 +13,22 @@ export class ApiError extends Error {
   }
 }
 
+type ErrorBody = { code?: string; message?: string; details?: Record<string, unknown> }
+
 function parseErrorEnvelope(text: string, status: number) {
   if (!text) return { message: `Request failed: ${status}` }
   try {
-    const json = JSON.parse(text) as { error?: { code?: string; message?: string; details?: Record<string, unknown> } }
-    const code = json?.error?.code
-    const message = json?.error?.message ?? (code ? `${code}` : undefined)
-    const details = json?.error?.details
-    return { message: message ?? text, code, details }
+    // FastAPI wraps HTTPException bodies in `detail`, and sends validation errors as a list there.
+    const json = JSON.parse(text) as { error?: ErrorBody; detail?: { error?: ErrorBody } | string | unknown[] }
+    const detail = json?.detail
+    if (typeof detail === 'string') return { message: detail }
+    if (Array.isArray(detail)) return { message: 'Some details are missing or invalid.', code: 'INVALID' }
+    const error = json?.error ?? detail?.error
+    const code = error?.code
+    const message = error?.message ?? (code ? `${code}` : undefined)
+    return { message: message ?? `Request failed: ${status}`, code, details: error?.details }
   } catch {
-    return { message: text }
+    return { message: status >= 500 ? 'Something went wrong. Please try again.' : text }
   }
 }
 
