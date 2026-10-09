@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { submitLeadInquiry } from '../../api/enquiry'
+import { ApiError } from '../../api/http'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
@@ -10,9 +11,11 @@ import { useToast } from '../../components/ui/toast/useToast'
 import { trackEvent } from '../../lib/analytics'
 import { useAppForm } from '../../lib/forms'
 
-/** Sent on every lead inquiry; backend unchanged — same defaults as previous form pre-selections. */
-const DEFAULT_CLASS_LEVEL = 'Class 8'
-const DEFAULT_SUBJECT = 'Maths'
+// Accept "+91 98765 43210" and similar, keeping the 10-digit mobile number.
+function toMobile(raw: string) {
+  const digits = raw.replace(/\D/g, '')
+  return digits.length === 12 && digits.startsWith('91') ? digits.slice(2) : digits
+}
 
 export function LeadEnquiryModal({
   open,
@@ -28,7 +31,11 @@ export function LeadEnquiryModal({
   const schema = useMemo(
     () =>
       z.object({
-        contactPhone: z.string().min(8, 'Contact number is required').max(20, 'Invalid contact number'),
+        contactPhone: z
+          .string()
+          .max(20, 'Enter a valid 10-digit mobile number')
+          .transform(toMobile)
+          .pipe(z.string().regex(/^[6-9]\d{9}$/, 'Enter a valid 10-digit mobile number')),
       }),
     [],
   )
@@ -40,16 +47,17 @@ export function LeadEnquiryModal({
     },
   })
 
+  // Back and the close button both clear the last enquiry, so reopening shows an empty form.
+  const close = () => {
+    setSuccessId(null)
+    form.reset()
+    onOpenChange(false)
+  }
+
   return (
     <Modal
       open={open}
-      onOpenChange={(o) => {
-        if (!o) {
-          setSuccessId(null)
-          form.reset()
-        }
-        onOpenChange(o)
-      }}
+      onOpenChange={(o) => (o ? onOpenChange(true) : close())}
       title="Enquiry to Find Tutors"
       description="Enter your phone number and we’ll reach out soon."
     >
@@ -59,7 +67,7 @@ export function LeadEnquiryModal({
             <div className="text-sm font-medium text-tn-text">Thanks! We will reach out to you soon.</div>
             <div className="mt-1 text-sm text-tn-muted">Reference: {successId}</div>
           </div>
-          <Button onClick={() => onOpenChange(false)}>Back</Button>
+          <Button onClick={close}>Back</Button>
         </div>
       ) : (
         <form
@@ -67,19 +75,13 @@ export function LeadEnquiryModal({
           onSubmit={form.handleSubmit(async (values) => {
             setSubmitting(true)
             try {
-              trackEvent('lead_enquiry_submitted', {
-                classLevel: DEFAULT_CLASS_LEVEL,
-                subject: DEFAULT_SUBJECT,
-              })
-              const res = await submitLeadInquiry({
-                contactPhone: values.contactPhone.trim(),
-                classLevel: DEFAULT_CLASS_LEVEL,
-                subject: DEFAULT_SUBJECT,
-              })
+              trackEvent('lead_enquiry_submitted', {})
+              // Class and subject are not asked here; the team collects them on the call.
+              const res = await submitLeadInquiry({ contactPhone: values.contactPhone, classLevel: '', subject: '' })
               setSuccessId(res.inquiryId)
               toast.success('Enquiry sent')
-            } catch {
-              toast.error('Failed to submit enquiry')
+            } catch (error) {
+              toast.error('Failed to submit enquiry', error instanceof ApiError ? error.message : undefined)
             } finally {
               setSubmitting(false)
             }
@@ -87,7 +89,13 @@ export function LeadEnquiryModal({
         >
           <div>
             <label className="text-sm font-medium">Your contact number</label>
-            <Input className="mt-1" {...form.register('contactPhone')} error={!!form.formState.errors.contactPhone} />
+            <Input
+              className="mt-1"
+              type="tel"
+              inputMode="numeric"
+              autoComplete="tel-national"
+              placeholder="10-digit mobile number"
+              {...form.register('contactPhone')} error={!!form.formState.errors.contactPhone} />
             {form.formState.errors.contactPhone ? (
               <p className="mt-1 text-sm text-tn-error">{form.formState.errors.contactPhone.message}</p>
             ) : null}
