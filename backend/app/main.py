@@ -111,8 +111,8 @@ class InquiryRequest(BaseModel):
 
 class LeadInquiryRequest(BaseModel):
     contactPhone: str
-    classLevel: str
-    subject: str
+    classLevel: str = Field(default="", max_length=50)
+    subject: str = Field(default="", max_length=100)
 
 
 @app.get("/healthz")
@@ -259,6 +259,35 @@ def internal_website_tutors(
         return {"leads": list_website_tutors(conn)}
 
 
+@app.get("/api/internal/parent-leads")
+@app.get("/v1/api/internal/parent-leads")
+def internal_parent_leads(
+    x_website_sync_key: str | None = Header(default=None, alias="X-Website-Sync-Key"),
+) -> dict[str, Any]:
+    """Every homepage Find Tutors enquiry, for the parent lead pipeline."""
+    _require_sync_key(x_website_sync_key)
+    with connect(read_only=True) as conn:
+        rows = conn.execute(
+            """
+            SELECT inquiry_id, contact_phone, class_level, subject, created_at
+            FROM inquiries WHERE kind = 'lead' ORDER BY created_at
+            """
+        ).fetchall()
+    return {"leads": [parent_lead_document(row) for row in rows]}
+
+
+def parent_lead_document(row: Any) -> dict[str, Any]:
+    """Shaped like a Meta lead so the parent pipeline stores it the same way."""
+    answers = {"phone_number": row["contact_phone"], "class": row["class_level"], "subject": row["subject"]}
+    return {
+        "id": f"web-{row['inquiry_id']}",
+        "created_time": row["created_at"],
+        "form_id": "website-find-tutors",
+        "form_name": "Website Find Tutors",
+        "field_data": [{"name": name, "values": [value]} for name, value in answers.items() if (value or "").strip()],
+    }
+
+
 @app.post("/api/inquiry")
 @app.post("/v1/api/inquiry")
 def create_inquiry(body: InquiryRequest) -> dict[str, Any]:
@@ -283,6 +312,11 @@ def create_inquiry(body: InquiryRequest) -> dict[str, Any]:
 @app.post("/v1/api/lead-inquiry")
 def create_lead_inquiry(body: LeadInquiryRequest) -> dict[str, Any]:
     phone = normalize_phone(body.contactPhone)
+    if phone[0] not in "6789" or not phone.isascii():
+        raise HTTPException(
+            status_code=400,
+            detail={"error": {"code": "INVALID_PHONE", "message": "Enter a valid 10-digit mobile number."}},
+        )
     inquiry_id = new_inquiry_id()
     ts = now_iso()
     with connect() as conn:
@@ -292,7 +326,7 @@ def create_lead_inquiry(body: LeadInquiryRequest) -> dict[str, Any]:
               (inquiry_id, kind, contact_phone, class_level, subject, created_at)
             VALUES (?, 'lead', ?, ?, ?, ?)
             """,
-            (inquiry_id, phone, body.classLevel, body.subject, ts),
+            (inquiry_id, phone, body.classLevel.strip(), body.subject.strip(), ts),
         )
         # Also create a parent/student user shell so registrations show up.
         conn.execute(

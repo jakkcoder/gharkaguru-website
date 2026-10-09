@@ -172,7 +172,7 @@ export const handlers = [
   http.post('/api/lead-inquiry', async ({ request }) => {
     await delay(500)
     const payload = (await request.json().catch(() => ({}))) as { contactPhone?: string; classLevel?: string; subject?: string }
-    if (!payload.contactPhone || !payload.classLevel || !payload.subject) {
+    if (!payload.contactPhone) {
       return HttpResponse.json({ message: 'Validation error' }, { status: 400 })
     }
     const inquiryId = `INQ-2026-${String(inquirySeq++).padStart(6, '0')}`
