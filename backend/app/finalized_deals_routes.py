@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from pathlib import Path
 from typing import Any, Annotated
 
@@ -15,7 +17,9 @@ from app.finalized_deals_auth import (
     verify_password,
 )
 from app.finalized_deals_db import (
+    FINALIZED_DEALS_DB_PATH,
     get_deal,
+    init_finalized_deals_db,
     insert_deal,
     list_deals,
     soft_delete_deal,
@@ -28,12 +32,21 @@ TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
+def _gcs_enabled() -> bool:
+    # Same switch as website.db: on the home server (SKIP_GCS_SYNC) finalized_deals.db stays local.
+    return os.getenv("SKIP_GCS_SYNC", "").strip().lower() not in {"1", "true", "yes"}
+
+
 def _sync_pull() -> None:
-    pull_finalized_deals_db()
+    if _gcs_enabled():
+        pull_finalized_deals_db()
+    else:
+        init_finalized_deals_db(FINALIZED_DEALS_DB_PATH)
 
 
 def _sync_push() -> None:
-    push_finalized_deals_db()
+    if _gcs_enabled():
+        push_finalized_deals_db()
 
 
 def _form_fields(
