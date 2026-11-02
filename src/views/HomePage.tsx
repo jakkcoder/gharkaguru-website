@@ -106,7 +106,7 @@ export function HomePage() {
             </Button>
           </Link>
           <a
-            href="https://wa.me/919983083002"
+            href="https://wa.me/918799788370"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex h-11 items-center justify-center rounded-md bg-[#25D366] px-5 text-base font-medium text-white shadow-soft hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2"
