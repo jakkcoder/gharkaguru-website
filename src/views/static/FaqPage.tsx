@@ -5,7 +5,7 @@ const faqs = [
     category: 'For Students',
     items: [
       { q: 'How do I find tutors near me?', a: 'Use the search page with location and subject, then refine filters.' },
-      { q: 'Are tutors verified?', a: 'Some tutors show a Verified badge. Verification workflow is mocked for now.' },
+      { q: 'Are tutors verified?', a: 'Some tutors show a Verified badge.' },
       { q: 'How do I contact a tutor?', a: 'Open a tutor profile and click “Contact Now” to submit an enquiry.' },
       { q: 'Can I shortlist tutors?', a: 'Yes. Click the heart icon to save tutors to your shortlist.' },
     ],
@@ -14,7 +14,7 @@ const faqs = [
     category: 'For Tutors',
     items: [
       { q: 'How do I register as a tutor?', a: 'Go to “For Teachers” → complete the registration wizard.' },
-      { q: 'What documents are required?', a: 'Aadhaar / PAN / Driving License (mocked uploads in frontend).' },
+      { q: 'What documents are required?', a: 'Aadhaar, PAN or Driving License.' },
       { q: 'How do I set my availability?', a: 'Add weekly time slots in the Availability step.' },
     ],
   },
