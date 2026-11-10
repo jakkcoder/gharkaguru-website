@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async'
 import { Link, useNavigate } from 'react-router-dom'
-import { useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
@@ -22,25 +22,7 @@ import { LeadEnquiryModal } from '../features/enquiry/LeadEnquiryModal'
 export function HomePage() {
   const navigate = useNavigate()
   const toast = useToast()
-  const [testimonialIdx, setTestimonialIdx] = useState(0)
   const [leadEnquiryOpen, setLeadEnquiryOpen] = useState(false)
-
-  const testimonials = useMemo(
-    () => [
-      { name: 'Riya S.', city: 'Delhi', rating: 5, comment: 'Found an amazing maths tutor within a day. Super smooth!' },
-      { name: 'Arjun K.', city: 'Mumbai', rating: 5, comment: 'Shortlisting made it easy to compare tutors and choose.' },
-      { name: 'Meera P.', city: 'Bengaluru', rating: 4.5, comment: 'Great experience. The enquiry flow is quick and clear.' },
-      { name: 'Kabir V.', city: 'Pune', rating: 4.8, comment: 'Helped my sister prepare for boards with confidence.' },
-      { name: 'Ira N.', city: 'Hyderabad', rating: 4.7, comment: 'Loved the availability view — scheduling felt effortless.' },
-      { name: 'Rohan G.', city: 'Kolkata', rating: 4.9, comment: 'Verified badges are reassuring. Solid set of options.' },
-    ],
-    [],
-  )
-
-  useEffect(() => {
-    const t = window.setInterval(() => setTestimonialIdx((i) => (i + 1) % testimonials.length), 6000)
-    return () => window.clearInterval(t)
-  }, [testimonials.length])
 
   const schema = z.object({
     location: z.string().min(1, 'Location is required'),
@@ -219,58 +201,6 @@ export function HomePage() {
           <div className="rounded-xl border border-tn-border bg-tn-bg p-4">
             <div className="text-sm font-medium">3) Start learning</div>
             <div className="mt-1 text-sm text-tn-muted">Schedule a demo and begin classes.</div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mt-10 rounded-2xl border border-tn-border bg-white p-6">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold">Testimonials</h2>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => setTestimonialIdx((i) => (i - 1 + testimonials.length) % testimonials.length)}
-              aria-label="Previous testimonial"
-            >
-              Prev
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => setTestimonialIdx((i) => (i + 1) % testimonials.length)}
-              aria-label="Next testimonial"
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-
-        <div className="mt-4 rounded-xl border border-tn-border bg-tn-bg p-5">
-          <div className="text-sm font-medium">
-            {testimonials[testimonialIdx]!.name} • {testimonials[testimonialIdx]!.city}
-          </div>
-          <div className="mt-1 text-sm text-tn-muted">Rating: {testimonials[testimonialIdx]!.rating}/5</div>
-          <p className="mt-3 text-tn-text">{testimonials[testimonialIdx]!.comment}</p>
-        </div>
-      </section>
-
-      <section className="mt-10 rounded-2xl border border-tn-border bg-white p-6">
-        <h2 className="text-xl font-semibold">GharKaGuru in numbers</h2>
-        <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <div className="rounded-xl border border-tn-border bg-tn-bg p-4">
-            <div className="text-2xl font-semibold">100,000+</div>
-            <div className="mt-1 text-sm text-tn-muted">Students Connected</div>
-          </div>
-          <div className="rounded-xl border border-tn-border bg-tn-bg p-4">
-            <div className="text-2xl font-semibold">25,000+</div>
-            <div className="mt-1 text-sm text-tn-muted">Tutors</div>
-          </div>
-          <div className="rounded-xl border border-tn-border bg-tn-bg p-4">
-            <div className="text-2xl font-semibold">4.8/5</div>
-            <div className="mt-1 text-sm text-tn-muted">Average Rating</div>
           </div>
         </div>
       </section>

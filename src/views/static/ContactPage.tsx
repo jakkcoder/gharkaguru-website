@@ -35,9 +35,11 @@ export function ContactPage() {
           <form
             className="mt-4 space-y-4"
             onSubmit={form.handleSubmit(async (values) => {
-              void values
-              toast.success('Message sent', 'We’ll get back to you soon. (Mock)')
-              form.reset()
+              // No message API yet: hand the message to the visitor's email app, addressed to support.
+              const subject = encodeURIComponent(`Website message from ${values.name}`)
+              const body = encodeURIComponent(`${values.message}\n\n${values.name}\n${values.email}`)
+              window.location.assign(`mailto:support@gharkaguru.com?subject=${subject}&body=${body}`)
+              toast.success('Opening your email app', 'Send the email to reach support@gharkaguru.com.')
             })}
           >
             <div>
@@ -64,7 +66,7 @@ export function ContactPage() {
                 <p className="mt-1 text-sm text-tn-error">{form.formState.errors.message.message}</p>
               ) : null}
             </div>
-            <Button type="submit">Submit</Button>
+            <Button type="submit">Send by email</Button>
           </form>
         </div>
 

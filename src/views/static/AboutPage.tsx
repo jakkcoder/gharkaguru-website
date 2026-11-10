@@ -31,8 +31,7 @@ export function AboutPage() {
         <section className="rounded-2xl border border-tn-border bg-white p-6">
           <h2 className="text-lg font-semibold">Safety & verification</h2>
           <p className="mt-2 text-tn-muted">
-            Verification badges and document checks help improve trust. (Mocked in this frontend; full workflow will be
-            added with the backend.)
+            Verification badges and document checks help improve trust.
           </p>
         </section>
 
